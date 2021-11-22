@@ -1,0 +1,27 @@
+{
+  "name": "jswabot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kamuridesu/js-bot.git"
+  },
+  "author": "kamuridesu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kamuridesu/js-bot/issues"
+  },
+  "homepage": "https://github.com/kamuridesu/js-bot#readme",
+  "dependencies": {
+    "@adiwajshing/baileys": "^3.5.3"
+  },
+  "type": "module",
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
