@@ -1,5 +1,6 @@
 // Imports
 const { WAConnection, MessageType } = require('@adiwajshing/baileys');
+const { checkGroupData } = require("./functions.js");
 const fs = require("fs");
 
 class Bot {
@@ -9,7 +10,23 @@ class Bot {
         this.bot_number = undefined;
         this.prefix = owner_data.prefix;
         this.owner_jid = owner_data.owner;
-        this.is_group_admin = false;
+        this.message_context = undefined;
+        this.sender = undefined;
+        this.from = undefined;
+        this.sender_is_owner = undefined;
+        this.is_group = undefined;
+        this.group_data = {
+            // "group_metadata": undefined,
+            "group_name": undefined,
+            "group_id": undefined,
+            "group_members": undefined,
+            "group_admins": undefined,
+            "bot_is_group_admin": undefined,
+            "sender_is_group_admin": undefined,
+            "group_description": undefined,
+            "group_link": undefined,
+            "welcome_on": undefined,
+        }
     }
 
     async connectToWa() {
@@ -17,58 +34,70 @@ class Bot {
         const config_auth_filename = "config.auth.json";
         try{
             this.conn.loadAuthInfo(config_auth_filename);
-        } catch (e) {
+        } catch (e) {undefined
             this.conn.on("open", () => {
                 const authInfo = this.conn.base64EncodedAuthInfo()
                 fs.writeFileSync(config_auth_filename, JSON.stringify(authInfo));
             })
         }
         await this.conn.connect();
+        this.bot_number = this.conn.user.jid;
 
         this.conn.on('chat-update', chatUpdate => {
             if (chatUpdate.messages && chatUpdate.count) {
-                const message = chatUpdate.messages.all()[0];
-                this.getTextMessageContent(this.conn, message);
+                this.getTextMessageContent(chatUpdate.messages.all()[0]);
             // } else console.log (chatUpdate);
             }
         })
     }
 
-    async getTextMessageContent(conn, message) {
-        console.log(this.owner_data);
-        //console.log(message)
+    async getTextMessageContent(message) {
+        this.message_context = message;
         if (!message.message) return false;
         if (message.key && message.key.remoteJid == 'status@broadcast') return false;
         if (message.key.fromMe) return false;
         const is_text_message = Object.keys(message.message)[0] === 'conversation';
-        const user_id = message.key.remoteJid;
+        this.from = message.key.remoteJid;
+        this.sender = this.from;
+        this.is_group = this.sender.endsWith("@g.us");
+        if (this.is_group) {
+            this.sender = message.participant
+            const metadata = await this.conn.groupMetadata(this.from)
+            this.group_data = await checkGroupData(metadata, this.bot_number, this.sender);
+        }
+        if (this.sender === this.owner_jid) {
+            this.sender_is_owner = true;
+        }
         if (is_text_message) {
             const text_message = message.message['conversation'];
             if (text_message.startsWith(this.prefix)) {
-                return this.commandHandler(conn, user_id, message, text_message);
+                return this.commandHandler(text_message);
             }
-            console.log(message.message['conversation']);
-            console.log(message);
+            if (this.is_group) {
+                console.log(this.group_data.group_name + ": " + message.message['conversation']);
+            }
         }
-        // const who_said = JSON.parse(JSON.stringify(message)).message.extendedTextMessage;
-        // const message_body = message;
     }
 
-    async commandHandler(conn, message_context, user_id, command) {
-        command = command.split(this.prefix)[1];
+    async reply(text, message_type) {
+        await this.conn.sendMessage(this.from, text, message_type, {
+            quoted: this.message_context
+        })
+    }
+
+    async commandHandler(cmd) {
+        const command = cmd.split(this.prefix)[1];
         console.log("Command: " + command);
         switch (command) {
+            case "start":
+                return this.reply("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/js-bot", MessageType.text);
+                break;
             case "test":
-                return this.reply(conn, message_context, user_id, "testando 1 2 3", MessageType.text);
+                return this.reply("testando 1 2 3", MessageType.text);
+                break;
         }
-    }
-
-    async reply(conn, message, from, text, message_type) {
-        await conn.sendMessage(from, text, message_type, {
-            quoted: message
-        })
     }
 }
 
 let x = new Bot();
-x.connectToWa().catch(err => console.log("unexpected error: " + err) );
+x.connectToWa().catch(err => console.log("unexpected error: " + err));
