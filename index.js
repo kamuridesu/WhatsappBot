@@ -34,7 +34,7 @@ class Bot {
         const config_auth_filename = "config.auth.json";
         try{
             this.conn.loadAuthInfo(config_auth_filename);
-        } catch (e) {undefined
+        } catch (e) {
             this.conn.on("open", () => {
                 const authInfo = this.conn.base64EncodedAuthInfo()
                 fs.writeFileSync(config_auth_filename, JSON.stringify(authInfo));
