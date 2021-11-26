@@ -19,8 +19,7 @@
   "homepage": "https://github.com/kamuridesu/js-bot#readme",
   "dependencies": {
     "@adiwajshing/baileys": "^3.5.3",
-    "axios": "^0.24.0",
-    "node-fetch": "^3.1.0"
+    "axios": "^0.24.0"
   },
   "type": "module",
   "devDependencies": {
