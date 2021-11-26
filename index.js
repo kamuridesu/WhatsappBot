@@ -1,8 +1,7 @@
 // Imports
-const { WAConnection, MessageType } = require('@adiwajshing/baileys');
-const { checkGroupData } = require("./functions.js");
-const fs = require("fs");
-
+import {WAConnection, MessageType, Mimetype} from '@adiwajshing/baileys';
+import { checkGroupData, createMediaBuffer } from './functions.js';
+import fs from "fs";
 class Bot {
     constructor() {
         const owner_data = JSON.parse(fs.readFileSync("config.admin.json"));
@@ -17,14 +16,13 @@ class Bot {
         this.is_group = undefined;
         this.group_data = {
             // "group_metadata": undefined,
-            "group_name": undefined,
-            "group_id": undefined,
-            "group_members": undefined,
-            "group_admins": undefined,
-            "bot_is_group_admin": undefined,
-            "sender_is_group_admin": undefined,
-            "group_description": undefined,
-            "group_link": undefined,
+            "name": undefined,
+            "id": undefined,
+            "members": undefined,
+            "admins": undefined,
+            "bot_is_admin": undefined,
+            "sender_is_admin": undefined,
+            "description": undefined,
             "welcome_on": undefined,
         }
     }
@@ -74,30 +72,63 @@ class Bot {
                 return this.commandHandler(text_message);
             }
             if (this.is_group) {
-                console.log(this.group_data.group_name + ": " + message.message['conversation']);
+                console.log(this.group_data.name + ": " + message.message['conversation']);
             }
         }
     }
 
-    async reply(text, message_type) {
-        await this.conn.sendMessage(this.from, text, message_type, {
+    async replyText(text) {
+        await this.conn.sendMessage(this.from, text, MessageType.text, {
             quoted: this.message_context
         })
     }
 
+    async replyMedia(media, message_type, mime, caption) {
+        if (fs.existsSync(media)) {
+            media = fs.readFileSync(media);
+        } else {
+            media = await createMediaBuffer(media);
+            if(media.error) {
+                caption = media.error.code,
+                media = media.media
+            }
+        }
+        await this.conn.sendMessage(this.from, media, message_type, {
+            mimetype: mime,
+            caption: (caption != undefined) ? caption : ""
+        })
+    }
+
     async commandHandler(cmd) {
-        const command = cmd.split(this.prefix)[1];
+        const command = cmd.split(this.prefix)[1].split(" ")[0];
+        const args = cmd.split(" ").slice(1);
+        let error = "Algo deu errado!";
+    
+        console.log(args);
         console.log("Command: " + command);
         switch (command) {
             case "start":
-                return this.reply("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/js-bot", MessageType.text);
+                return this.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/js-bot");
                 break;
             case "test":
-                return this.reply("testando 1 2 3", MessageType.text);
+                return this.replyText("testando 1 2 3");
                 break;
+            case "music":
+                return this.replyMedia("./config.test/music.mp3", MessageType.audio, Mimetype.mp4Audio)
+                
+            case "image_from_url":
+                if (args.length < 1) {
+                    error = "Error! Preciso que uma url seja passad!";
+                } else if (args.length > 1) {
+                    error = "Error! Muitos argumentos!";
+                } else {
+                    return this.replyMedia(args[0], MessageType.image, Mimetype.png)
+                }
+                return this.replyText(error);
         }
     }
 }
+
 
 let x = new Bot();
 x.connectToWa().catch(err => console.log("unexpected error: " + err));
