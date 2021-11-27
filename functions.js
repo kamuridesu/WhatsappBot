@@ -81,7 +81,6 @@ async function checkMessageData(message) {
         message_data.is_quoted_sticker = message_string.includes("stickerMessage");
     }
     return message_data;
-
 }
 
 
