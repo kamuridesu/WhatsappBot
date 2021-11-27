@@ -1,7 +1,10 @@
 // Imports
 import {WAConnection, MessageType, Mimetype} from '@adiwajshing/baileys';
-import { checkGroupData, createMediaBuffer } from './functions.js';
+import { commandHandler } from "./command_handlers.js";
+import { checkGroupData, createMediaBuffer, checkMessageData } from './functions.js';
 import fs from "fs";
+
+
 class Bot {
     constructor() {
         const owner_data = JSON.parse(fs.readFileSync("config.admin.json"));
@@ -9,7 +12,7 @@ class Bot {
         this.bot_number = undefined;
         this.prefix = owner_data.prefix;
         this.owner_jid = owner_data.owner;
-        this.message_context = undefined;
+        // this.message_data.context = undefined;
         this.sender = undefined;
         this.from = undefined;
         this.sender_is_owner = undefined;
@@ -25,6 +28,17 @@ class Bot {
             "description": undefined,
             "welcome_on": undefined,
         }
+        this.message_data = {
+            context: undefined,
+            type: undefined,
+            body: undefined,
+            is_media: false,
+            is_quoted_text: false,
+            is_quoted_video: false,
+            is_quoted_image: false,
+            is_quoted_audio: false,
+            is_quoted_sticker: false,
+        }
     }
 
     async connectToWa() {
@@ -38,6 +52,7 @@ class Bot {
                 fs.writeFileSync(config_auth_filename, JSON.stringify(authInfo));
             })
         }
+
         await this.conn.connect();
         this.bot_number = this.conn.user.jid;
 
@@ -50,14 +65,17 @@ class Bot {
     }
 
     async getTextMessageContent(message) {
-        this.message_context = message;
+        this.message_data = await checkMessageData(message);
+        // console.log(this.message_data);
+
         if (!message.message) return false;
         if (message.key && message.key.remoteJid == 'status@broadcast') return false;
         if (message.key.fromMe) return false;
-        const is_text_message = Object.keys(message.message)[0] === 'conversation';
+
         this.from = message.key.remoteJid;
         this.sender = this.from;
         this.is_group = this.sender.endsWith("@g.us");
+
         if (this.is_group) {
             this.sender = message.participant
             const metadata = await this.conn.groupMetadata(this.from)
@@ -66,20 +84,17 @@ class Bot {
         if (this.sender === this.owner_jid) {
             this.sender_is_owner = true;
         }
-        if (is_text_message) {
-            const text_message = message.message['conversation'];
-            if (text_message.startsWith(this.prefix)) {
-                return this.commandHandler(text_message);
-            }
-            if (this.is_group) {
-                console.log(this.group_data.name + ": " + message.message['conversation']);
-            }
+        if (this.message_data.body.startsWith(this.prefix)) {
+            return await commandHandler(this, this.message_data.body);
+        }
+        if (this.is_group) {
+            console.log(this.group_data.name + ": " + message.message['conversation']);
         }
     }
 
     async replyText(text) {
         await this.conn.sendMessage(this.from, text, MessageType.text, {
-            quoted: this.message_context
+            quoted: this.message_data.context
         })
     }
 
@@ -93,39 +108,18 @@ class Bot {
                 media = media.media
             }
         }
-        await this.conn.sendMessage(this.from, media, message_type, {
-            mimetype: mime,
-            caption: (caption != undefined) ? caption : ""
-        })
+        if (message_type === MessageType.sticker) {
+            await this.conn.sendMessage(this.from, media, message_type)
+        } else {
+            await this.conn.sendMessage(this.from, media, message_type, {
+                mimetype: mime ? mime : '',
+                caption: (caption != undefined) ? caption : ""
+            })
+        }
     }
 
-    async commandHandler(cmd) {
-        const command = cmd.split(this.prefix)[1].split(" ")[0];
-        const args = cmd.split(" ").slice(1);
-        let error = "Algo deu errado!";
-    
-        console.log(args);
-        console.log("Command: " + command);
-        switch (command) {
-            case "start":
-                return this.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/js-bot");
-                break;
-            case "test":
-                return this.replyText("testando 1 2 3");
-                break;
-            case "music":
-                return this.replyMedia("./config.test/music.mp3", MessageType.audio, Mimetype.mp4Audio)
-                
-            case "image_from_url":
-                if (args.length < 1) {
-                    error = "Error! Preciso que uma url seja passad!";
-                } else if (args.length > 1) {
-                    error = "Error! Muitos argumentos!";
-                } else {
-                    return this.replyMedia(args[0], MessageType.image, Mimetype.png)
-                }
-                return this.replyText(error);
-        }
+    async sendTextMessage(text) {
+        await this.conn.sendMessage(this.from, text, MessageType.text);
     }
 }
 
