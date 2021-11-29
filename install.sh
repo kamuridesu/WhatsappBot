@@ -1,4 +1,4 @@
-if [ echo $PREFIX | grep -o "com.termux" ]; then
+if [ $(echo $PREFIX | grep -o "com.termux") ]; then
     pkg update
     pkg install nodejs ffmpeg libwebp git -y
 else
