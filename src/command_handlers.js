@@ -1,5 +1,6 @@
 import {MessageType, Mimetype, GroupSettingChange } from '@adiwajshing/baileys';
 import { createStickerFromMedia } from './user_functions.js';
+import { getAllCommands } from "./docs/DOC_commands.js";
 
 /* TODOS OS COMANDOS DEVEM ESTAR NESTE ARQUIVO, MENOS OS COMANDOS SEM PREFIXO.
 CASO PRECISE DE FUNÇÕES GRANDES, SIGA A BOA PRÁTICA E ADICIONE ELAS NO ARQUIVO user_functions.js,
@@ -24,6 +25,10 @@ async function commandHandler(bot, cmd) {
             // retorna uma menssagem de apresentação
             return await bot.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/WhatsappBot");
             break;
+
+        case "ajuda":
+        case "menu":
+            return await bot.replyText(getAllCommands);
 
         case "test":
             // retorna um teste
