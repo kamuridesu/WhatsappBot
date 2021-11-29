@@ -9,8 +9,9 @@ Clone this repository, create a JSON named config.admin.json with your number an
 | Command | Description                         |
 |---------|-------------------------------------|
 | start   | Shows the start message for the bot |
-<!-- |         |                                     |
-|         |                                     | -->
+| test    | Sends a text message                |
+| repeat  |  repeat what the user says |
+| sticker  |  creates a sticker from imagem or video, pass the packname and author like: !sticker mypack me |
 
 More commands will be addded as the development goes on.
 
