@@ -2,12 +2,13 @@
 import {WAConnection, MessageType, Mimetype} from '@adiwajshing/baileys';
 import { commandHandler } from "./command_handlers.js";
 import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot } from './functions.js';
-import { getBomDiaMessage } from './chat_handlers.js';
+import { messageHandler } from './chat_handlers.js';
 import fs from "fs";
 
-
+// classe Bot, onde as informações vão ser armazenadas e as requisições processadas.
 class Bot {
     constructor() {
+        // pegar e guardar as informações necessárias.
         const owner_data = JSON.parse(fs.readFileSync("config.admin.json"));
         this.conn = undefined;
         this.has_updates = false;
@@ -59,11 +60,14 @@ class Bot {
         this.conn.on('chat-update', chatUpdate => {
             if (chatUpdate.messages && chatUpdate.count) {
                 this.getTextMessageContent(chatUpdate.messages.all()[0]);
-            // } else console.log (chatUpdate);
             }
         })
     }
 
+    /**
+     * processa a mensagem
+     * @param {object} message menssagem contendo os dados para processamento
+     */
     async getTextMessageContent(message) {
         checkUpdates(this);
         this.message_data = await checkMessageData(message);
@@ -90,8 +94,9 @@ class Bot {
         }
         if (this.message_data.body.startsWith(this.prefix)) {
             return await commandHandler(this, this.message_data.body);
+            // retorna se for command, evita que o bot atualize quando tiver recebendo comando.
         } else {
-            await getBomDiaMessage(this, this.message_data.body);
+            await messageHandler(this, this.message_data.body);
         }
         if(this.has_updates) {
             console.log("Atualização dispoível!");
@@ -100,16 +105,29 @@ class Bot {
         }
     }
 
+    /**
+     * responde via mensagem de texto para o usuario.
+     * @param {string} text texto a ser enviado.
+     */
     async replyText(text) {
         await this.conn.sendMessage(this.from, text, MessageType.text, {
             quoted: this.message_data.context
         })
     }
 
+    /**
+     * reponde enviando uma midia
+     * @param {Buffer} media midia a ser enviada
+     * @param {MessageType} message_type tipo da mensagem
+     * @param {Mimetype} mime mime do arquivo a ser enviado
+     * @param {string} caption legenda do arquivo
+     */
     async replyMedia(media, message_type, mime, caption) {
         if (fs.existsSync(media)) {
+            // verifica se o arquivo existe localmente, se sim, o envia
             media = fs.readFileSync(media);
         } else {
+            // se o arquivo não existir localmente, tenta fazer o download.
             media = await createMediaBuffer(media);
             if(media.error) {
                 caption = media.error.code,
@@ -117,6 +135,7 @@ class Bot {
             }
         }
         if (message_type === MessageType.sticker) {
+            // se for sticker, não pode enviar caption nem mime.
             await this.conn.sendMessage(this.from, media, message_type, {
                 quoted: this.message_data.context
             })
@@ -129,8 +148,13 @@ class Bot {
         }
     }
 
+    /**
+     * envia mensagem de texto para alguem sem mencionar
+     * @param {string} text texto a ser enviado
+     * @param {string} to para quem enviar
+     */
     async sendTextMessage(text, to) {
-        let to_who = to ? to : this.from;
+        const to_who = to ? to : this.from;  // se não for definido para quem enviar, vai enviar para quem enviou o comando.
         await this.conn.sendMessage(to_who, text, MessageType.text);
     }
 }

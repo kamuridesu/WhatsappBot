@@ -1,5 +1,10 @@
-/* THIS FILE HAS FUNCTIONS TO HANDLE TEXT MESSAGES, NOT COMMANDS! 
-IF YOU DON'T HAVE SURE OF WHAT YOU'RE DOING, DON'T DO ANYTHING! */
+/* USE ESTE ARQUIVO PARA MANIPULAR MENSSAGENS DE TEXTO, NÃO COMANDOS!
+PARA ISSO, CRIE FUNÇÕES PARA CADA MENSSAGEM QUE VOCÊ QUER RESPONDER! 
+ADICIONE SUAS FUNÇÕES NO messageHandler APENAS!*/
+
+async function messageHandler(bot, message) {
+    getBomDiaMessage(bot, message);
+}
 
 async function getBomDiaMessage(bot, message) {
     if(message === "bom dia" || message === "Bom dia") {
@@ -7,4 +12,4 @@ async function getBomDiaMessage(bot, message) {
     }
 }
 
-export { getBomDiaMessage };
+export { messageHandler };
