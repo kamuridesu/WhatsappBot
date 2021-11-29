@@ -1,15 +1,15 @@
 // Imports
 import {WAConnection, MessageType, Mimetype} from '@adiwajshing/baileys';
-import { commandHandler } from "./command_handlers.js";
-import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot } from './functions.js';
-import { messageHandler } from './chat_handlers.js';
+import { commandHandler } from "./src/command_handlers.js";
+import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot } from './src/functions.js';
+import { messageHandler } from './src/chat_handlers.js';
 import fs from "fs";
 
 // classe Bot, onde as informações vão ser armazenadas e as requisições processadas.
 class Bot {
     constructor() {
         // pegar e guardar as informações necessárias.
-        const owner_data = JSON.parse(fs.readFileSync("config.admin.json"));
+        const owner_data = JSON.parse(fs.readFileSync("./config/config.admin.json"));
         this.conn = undefined;
         this.has_updates = false;
         this.bot_number = undefined;
@@ -44,7 +44,7 @@ class Bot {
 
     async connectToWa() {
         this.conn = new WAConnection();
-        const config_auth_filename = "config.auth.json";
+        const config_auth_filename = "./config/config.auth.json";
         try{
             this.conn.loadAuthInfo(config_auth_filename);
         } catch (e) {
@@ -71,7 +71,6 @@ class Bot {
     async getTextMessageContent(message) {
         checkUpdates(this);
         this.message_data = await checkMessageData(message);
-        // console.log(this.message_data);
 
         if (!message.message) return false;
         if (message.key && message.key.remoteJid == 'status@broadcast') return false;
@@ -86,7 +85,7 @@ class Bot {
             const metadata = await this.conn.groupMetadata(this.from)
             this.group_data = await checkGroupData(metadata, this.bot_number, this.sender);
         }
-        if (this.sender === this.owner_jid) {
+        if (this.sender === this.owner_jid || this.from === this.owner_jid) {
             this.sender_is_owner = true;
         }
         if (this.is_group) {

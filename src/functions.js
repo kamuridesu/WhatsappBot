@@ -80,7 +80,6 @@ async function checkGroupData(group_metadata, bot_number, sender) {
  * @returns {object} message_data with all retrieved information
  */
 async function checkMessageData(message) {
-    console.log(typeof(message));
     let message_data = {
         context: undefined,
         type: undefined,

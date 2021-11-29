@@ -11,7 +11,6 @@ import { exec } from "child_process";
  * @returns {string} path of exif data
  */
  async function addMetadata(author, packname) {
-    console.log(packname)
     packname = (packname) ? packname : "kamubot";
     author = (author) ? author.replace(/[^a-zA-Z0-9]/g, '') : "kamubot";  // author cannot have spaces
     const file_path = `./temp/stickers/${author}_${packname}.exif`;
