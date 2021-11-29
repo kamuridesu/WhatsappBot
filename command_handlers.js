@@ -29,56 +29,42 @@ async function commandHandler(bot, cmd) {
             }
             return bot.replyText(error);
             break;
+
         case "repeat":
             return bot.sendTextMessage(args.join(" "));
+
         case 'sticker':
             let media = undefined;
             let error = {error: false, msg: "Something has gone wrong!"};
 
-
-            if(bot,message_data.is_media) {
-                if(bot.message_data.is_quoted_)
-            }
-
-
-
-
-            if(bot.message_data.is_media || bot.message_data.is_quoted_image || bot.message_data.is_quoted_video){
-                console.log(bot.message_data.type == "videoMessage" || bot.message_data.is_quoted_video);
-                if(!(bot.message_data.type == "videoMessage") || bot.message_data.is_quoted_image){
-                    console.log("true asdasd")
-                    media = bot.message_data.is_quoted_image ? JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : bot.message_data.context;
-                } else if (bot.message_data.type == "videoMessage" || bot.message_data.is_quoted_video) {
-                    console.log("video detect");
-                    if(((bot.message_data.context.message.videoMessage.seconds < 11 || bot.message_data.is_quoted_video && bot.message_data.context.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11))) {
-                        console.log("video");
+            if(bot.message_data.is_media) {
+                if((bot.message_data.type == "imageMessage")) {
+                    media = bot.message_data.context;
+                }  else if (bot.message_data.type == "videoMessage") {
+                    if (bot.message_data.context.message.videoMessage.seconds < 11) {
+                        media = bot.message_data.context;
+                    } else {
+                        error = {error: true, msg: "Video is larger than 10 seconds!"};
                     }
+                } else {
+                    error = {error: true, msg: "Media not supported!"};
                 }
-                // media = bot.message_data.is_quoted_image ? JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : bot.message_data.context;
-                // console.log(await bot.conn.downloadAndSaveMediaMessage(media));
+            } else if(bot.message_data.is_quoted_image) {
+                media = JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo;
+            } else if (bot.message_data.is_quoted_video) {
+                if(bot.message_data.context.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) {
+                    media = JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo;
+                }
+            } else {
+                error = {error: true, msg: "Invalid Media!"}
             }
-        	// let media = undefined;
-            //    let error = {error: false, msg: "Something has gome wrong!"};
-        	// if (bot.message_data.is_media  || bot.message_data.is_quoted_image || bot.message_data.is_quoted_video) {
-	        // 	if(bot.message_data.type !== "videoMessage") {
-	        // 		media = bot.message_data.is_quoted_image ? JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : bot.message_data.context;
-	        // 	} else if(bot.message_data.type === "videoMessage") {
-         //            if (bot.message_data.context.videoMessage.seconds < 11 || bot.message_data.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11){
-         //                media = bot.message_data.is_quoted_video ? JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : bot.message_data.context;
-         //            } else {
-         //                error = {error: true, msg: "Video larger than expected!"};
-         //            }
-	        // 	} else {
-         //            error = {error: true, msg: "Media is not image nor video"};
-         //        }
-         //        if (error.error === false){
-         //            media = await bot.conn.downloadAndSaveMediaMessage(media);
-         //            // if(bot.message_data.is_quoted_image);
-         //            return await createStickerFromImage(bot, media);
-         //        }
-	        // }
-         //    return bot.replyText(error.msg);
-         //    break
+
+            if(error.error) {
+                return bot.replyText(error.msg);
+            } else {
+                media = await bot.conn.downloadAndSaveMediaMessage(media);
+                return await createStickerFromImage(bot, media);
+            }
     }
 }
 

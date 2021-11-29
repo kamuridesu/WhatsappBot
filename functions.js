@@ -14,15 +14,14 @@ import {MessageType, Mimetype} from '@adiwajshing/baileys';
  */
 async function checkGroupData(group_metadata, bot_number, sender) {
     let group_data = {
-        // "group_metadata": undefined,
-        "name": undefined,
-        "id": undefined,
-        "members": undefined,
-        "admins": undefined,
-        "bot_is_admin": undefined,
-        "sender_is_admin": undefined,
-        "description": undefined,
-        "welcome_on": undefined,
+        name: undefined,
+        id: undefined,
+        members: undefined,
+        admins: undefined,
+        bot_is_admin: undefined,
+        sender_is_admin: undefined,
+        description: undefined,
+        welcome_on: undefined,
     }
     group_data.name = group_metadata.subject
     group_data.id = group_metadata.id;
@@ -158,7 +157,7 @@ async function createStickerFromImage(bot, image) {
     .toFormat('webp')
     .save(random_filename)
     .on("error", (err) => {
-        console.log("error: " + error);
+        console.log("error: " + err);
         fs.unlinkSync(image);
         return {error: err};
     }).on("end", async () => {
@@ -171,9 +170,7 @@ async function createStickerFromImage(bot, image) {
                 return {error: error};
             }
             console.log("Sending sticker: " + random_filename);
-            await bot.replyMedia(random_filename, MessageType.sticker, {
-                quoted: bot.message_data.context
-            });
+            await bot.replyMedia(random_filename, MessageType.sticker);
             console.log("deleting local files")
             fs.unlinkSync("./" + image);
             fs.unlinkSync(random_filename);

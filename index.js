@@ -2,6 +2,7 @@
 import {WAConnection, MessageType, Mimetype} from '@adiwajshing/baileys';
 import { commandHandler } from "./command_handlers.js";
 import { checkGroupData, createMediaBuffer, checkMessageData } from './functions.js';
+import { getBomDiaMessage } from './chat_handlers.js';
 import fs from "fs";
 
 
@@ -12,21 +13,19 @@ class Bot {
         this.bot_number = undefined;
         this.prefix = owner_data.prefix;
         this.owner_jid = owner_data.owner;
-        // this.message_data.context = undefined;
         this.sender = undefined;
         this.from = undefined;
         this.sender_is_owner = undefined;
         this.is_group = undefined;
         this.group_data = {
-            // "group_metadata": undefined,
-            "name": undefined,
-            "id": undefined,
-            "members": undefined,
-            "admins": undefined,
-            "bot_is_admin": undefined,
-            "sender_is_admin": undefined,
-            "description": undefined,
-            "welcome_on": undefined,
+            name: undefined,
+            id: undefined,
+            members: undefined,
+            admins: undefined,
+            bot_is_admin: undefined,
+            sender_is_admin: undefined,
+            description: undefined,
+            welcome_on: undefined,
         }
         this.message_data = {
             context: undefined,
@@ -84,11 +83,13 @@ class Bot {
         if (this.sender === this.owner_jid) {
             this.sender_is_owner = true;
         }
-        if (this.message_data.body.startsWith(this.prefix)) {
-            return await commandHandler(this, this.message_data.body);
-        }
         if (this.is_group) {
             console.log(this.group_data.name + ": " + message.message['conversation']);
+        }
+        if (this.message_data.body.startsWith(this.prefix)) {
+            return await commandHandler(this, this.message_data.body);
+        } else {
+            return await getBomDiaMessage(this, this.message_data.body);
         }
     }
 
@@ -109,11 +110,14 @@ class Bot {
             }
         }
         if (message_type === MessageType.sticker) {
-            await this.conn.sendMessage(this.from, media, message_type)
+            await this.conn.sendMessage(this.from, media, message_type, {
+                quoted: this.message_data.context
+            })
         } else {
             await this.conn.sendMessage(this.from, media, message_type, {
                 mimetype: mime ? mime : '',
-                caption: (caption != undefined) ? caption : ""
+                caption: (caption != undefined) ? caption : "",
+                quoted: this.message_data.context
             })
         }
     }
