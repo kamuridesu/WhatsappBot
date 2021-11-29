@@ -1,4 +1,4 @@
-import {MessageType, Mimetype} from '@adiwajshing/baileys';
+import {MessageType, Mimetype, GroupSettingChange } from '@adiwajshing/baileys';
 import { createStickerFromMedia } from './user_functions.js';
 
 /* TODOS OS COMANDOS DEVEM ESTAR NESTE ARQUIVO, MENOS OS COMANDOS SEM PREFIXO.
@@ -92,6 +92,120 @@ async function commandHandler(bot, cmd) {
                 return await createStickerFromMedia(bot, media, packname, author);
             }
             return await bot.replyText(error);
+
+        case "desc":
+            // muda a descrição do grupo
+            if(!bot.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if(args.length < 1) {
+                error = "Erro! Preciso de argumentos!";
+            } else if(!bot.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else {
+                const description = args.join(" ");
+                await bot.conn.groupUpdateDescription(bot.group_data.id, description);
+                return await bot.replyText(error);
+            }
+            return await bot.replyText("Atualizado com sucesso!");
+
+        case "mudanome":
+            // muda o nome do grupo
+            if(!bot.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if(args.length < 1) {
+                error = "Erro! Preciso de argumentos!";
+            } else if(!bot.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else {
+                const name = args.join(" ");
+                await bot.conn.groupUpdateSubject(bot.group_data.id, name);
+                return await bot.replyText("Atualizado com sucesso!");
+            }
+
+            return await bot.replyText(error);
+
+        case "trancar":
+            // fecha o grupo, apenas admins podem falar
+            if(!bot.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if(!bot.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else if(bot.group_data.locked) {
+                error = "Erro! O grupo já está fechado!";
+            } else {
+                await bot.conn.groupSettingChange(bot.group_data.id, GroupSettingChange.messageSend, true);
+                return await bot.replyText("Grupo trancado!");
+            }
+            return await bot.replyText(error);
+
+        case "abrir":
+            // abre o grupo, todos podem falar
+            if(!bot.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if(!bot.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else if(bot.group_data.open) {
+                error = "Erro! O grupo já está aberto!";
+            } else {
+                await bot.conn.groupSettingChange(bot.group_data.id, GroupSettingChange.messageSend, false);
+                return await bot.replyText("Grupo aberto!");
+            }
+            return await bot.replyText(error);
+
+        case "promover":
+            let user_id = undefined;
+            if(!bot.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if(bot.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else {
+                if(bot.message_data.is_quoted_text) {
+                    user_id = console.log(JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
+                } else if(args.length === 1) {
+                    user_id = args[0];
+                } else {
+                    error = "Erro! Preciso que algum usuario seja mencionado ou marcado!";
+                }
+            }
+            if(user_id !== undefined) {
+                if(bot.group_data.admins.includes(user_id)) {
+                    error = "Erro! Usuário já é admin!";
+                } else {
+                    user_id = user_id.split("@")[1] + "@s.whatsapp.net";
+                    console.log(user_id);
+                    await bot.conn.groupMakeAdmin(bot.group_data.id, [user_id]);
+                    return await bot.replyText("Promovido com sucesso!");
+                }
+            }
+            return await bot.replyText(error);
+        
+        case "rebaixar":
+            let user_id = undefined;
+            if(!bot.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if(bot.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else {
+                if(bot.message_data.is_quoted_text) {
+                    user_id = console.log(JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
+                } else if(args.length === 1) {
+                    user_id = args[0];
+                } else {
+                    error = "Erro! Preciso que algum usuario seja mencionado ou marcado!";
+                }
+            }
+            if(user_id !== undefined) {
+                if(!bot.group_data.admins.includes(user_id)) {
+                    error = "Erro! Usuário não é admin!";
+                } else {
+                    user_id = user_id.split("@")[1] + "@s.whatsapp.net";
+                    console.log(user_id);
+                    await bot.conn.groupDemoteAdmin(bot.group_data.id, [user_id]);
+                    return await bot.replyText("Promovido com sucesso!");
+                }
+            }
+            return await bot.replyText(error);
+
     }
 }
 

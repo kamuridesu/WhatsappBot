@@ -1,5 +1,5 @@
 // Imports
-import {WAConnection, MessageType, Mimetype} from '@adiwajshing/baileys';
+import {WAConnection, MessageType, Mimetype, Presence } from '@adiwajshing/baileys';
 import { commandHandler } from "./src/command_handlers.js";
 import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot } from './src/functions.js';
 import { messageHandler } from './src/chat_handlers.js';
@@ -27,6 +27,8 @@ class Bot {
             bot_is_admin: undefined,
             sender_is_admin: undefined,
             description: undefined,
+            locked: false,
+            open: true,
             welcome_on: undefined,
         }
         this.message_data = {
@@ -69,6 +71,7 @@ class Bot {
      * @param {object} message menssagem contendo os dados para processamento
      */
     async getTextMessageContent(message) {
+        // console.log(message);
         checkUpdates(this);
         this.message_data = await checkMessageData(message);
 
@@ -77,6 +80,8 @@ class Bot {
         if (message.key.fromMe) return false;
 
         this.from = message.key.remoteJid;
+        await this.conn.updatePresence(this.from, Presence.available);
+        await this.conn.chatRead(this.from);
         this.sender = this.from;
         this.is_group = this.sender.endsWith("@g.us");
 
@@ -100,6 +105,7 @@ class Bot {
         if(this.has_updates) {
             console.log("Atualização dispoível!");
             console.log("Atualizando...");
+            await this.conn.updatePresence(this.from, Presence.unavailable);
             updateBot(this);
         }
     }
@@ -109,6 +115,7 @@ class Bot {
      * @param {string} text texto a ser enviado.
      */
     async replyText(text) {
+        await this.conn.updatePresence(this.from, Presence.composing);
         await this.conn.sendMessage(this.from, text, MessageType.text, {
             quoted: this.message_data.context
         })
@@ -122,6 +129,7 @@ class Bot {
      * @param {string} caption legenda do arquivo
      */
     async replyMedia(media, message_type, mime, caption) {
+        await this.conn.updatePresence(this.from, Presence.recording);
         if (fs.existsSync(media)) {
             // verifica se o arquivo existe localmente, se sim, o envia
             media = fs.readFileSync(media);
@@ -153,6 +161,7 @@ class Bot {
      * @param {string} to para quem enviar
      */
     async sendTextMessage(text, to) {
+        await this.conn.updatePresence(this.from, Presence.composing);
         const to_who = to ? to : this.from;  // se não for definido para quem enviar, vai enviar para quem enviou o comando.
         await this.conn.sendMessage(to_who, text, MessageType.text);
     }

@@ -146,6 +146,4 @@ async function createMediaBuffer(url, options) {
     }
 }
 
-
-
 export { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot };
