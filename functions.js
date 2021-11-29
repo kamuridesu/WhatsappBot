@@ -5,6 +5,30 @@ const ffmpeg = pkg;
 import { exec } from "child_process";
 import {MessageType, Mimetype} from '@adiwajshing/baileys';
 
+async function checkUpdates(bot) {
+    let actual_version = JSON.parse(fs.readFileSync("./package.json")).version;
+    try{
+        const response = await axios({
+            method: "get",
+            url: "https://raw.githubusercontent.com/kamuridesu/js-bot/1.0.0/package.json",
+            headers: {
+                "DNT": 1,
+                "Upgrade-Insecure-Request": 1
+            },
+            responseType: 'blob'
+        });
+        bot.has_updates = (response.data.version != actual_version);
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+async function updateBot(bot) {
+    exec("git pull", (error) => {
+        bot.sendMessage("Não foi possivel atualizar> " + error, bot.owner_jid);   
+    })
+}
+
 /**
  * Checks the metadata for one group
  * @param {object} group_metadata 
@@ -180,4 +204,4 @@ async function createStickerFromImage(bot, image) {
 
 }
 
-export { checkGroupData, createMediaBuffer, checkMessageData, createStickerFromImage };
+export { checkGroupData, createMediaBuffer, checkMessageData, createStickerFromImage, checkUpdates, updateBot };

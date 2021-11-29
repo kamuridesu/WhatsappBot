@@ -1,7 +1,7 @@
 // Imports
 import {WAConnection, MessageType, Mimetype} from '@adiwajshing/baileys';
 import { commandHandler } from "./command_handlers.js";
-import { checkGroupData, createMediaBuffer, checkMessageData } from './functions.js';
+import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot } from './functions.js';
 import { getBomDiaMessage } from './chat_handlers.js';
 import fs from "fs";
 
@@ -10,6 +10,7 @@ class Bot {
     constructor() {
         const owner_data = JSON.parse(fs.readFileSync("config.admin.json"));
         this.conn = undefined;
+        this.has_updates = false;
         this.bot_number = undefined;
         this.prefix = owner_data.prefix;
         this.owner_jid = owner_data.owner;
@@ -64,6 +65,7 @@ class Bot {
     }
 
     async getTextMessageContent(message) {
+        checkUpdates(this);
         this.message_data = await checkMessageData(message);
         // console.log(this.message_data);
 
@@ -89,7 +91,10 @@ class Bot {
         if (this.message_data.body.startsWith(this.prefix)) {
             return await commandHandler(this, this.message_data.body);
         } else {
-            return await getBomDiaMessage(this, this.message_data.body);
+            await getBomDiaMessage(this, this.message_data.body);
+        }
+        if(this.has_updates) {
+            updateBot(this);
         }
     }
 
@@ -122,8 +127,9 @@ class Bot {
         }
     }
 
-    async sendTextMessage(text) {
-        await this.conn.sendMessage(this.from, text, MessageType.text);
+    async sendTextMessage(text, to) {
+        let to_who = to ? to : this.from;
+        await this.conn.sendMessage(to_who, text, MessageType.text);
     }
 }
 

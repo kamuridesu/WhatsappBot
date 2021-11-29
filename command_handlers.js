@@ -11,13 +11,13 @@ async function commandHandler(bot, cmd) {
     console.log("Command: " + command);
     switch (command) {
         case "start":
-            return bot.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/js-bot");
+            return await bot.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/js-bot");
             break;
         case "test":
-            return bot.replyText("testando 1 2 3");
+            return await bot.replyText("testando 1 2 3");
             break;
         case "music":
-            return bot.replyMedia("./config.test/music.mp3", MessageType.audio, Mimetype.mp4Audio)
+            return await bot.replyMedia("./config.test/music.mp3", MessageType.audio, Mimetype.mp4Audio)
             
         case "image_from_url":
             if (args.length < 1) {
@@ -25,13 +25,13 @@ async function commandHandler(bot, cmd) {
             } else if (args.length > 1) {
                 error = "Error! Muitos argumentos!";
             } else {
-                return bot.replyMedia(args[0], MessageType.image, Mimetype.png)
+                return await bot.replyMedia(args[0], MessageType.image, Mimetype.png)
             }
-            return bot.replyText(error);
+            return await bot.replyText(error);
             break;
 
         case "repeat":
-            return bot.sendTextMessage(args.join(" "));
+            return await bot.sendTextMessage(args.join(" "));
 
         case 'sticker':
             let media = undefined;
@@ -60,7 +60,7 @@ async function commandHandler(bot, cmd) {
             }
 
             if(error.error) {
-                return bot.replyText(error.msg);
+                return await bot.replyText(error.msg);
             } else {
                 media = await bot.conn.downloadAndSaveMediaMessage(media);
                 return await createStickerFromImage(bot, media);
