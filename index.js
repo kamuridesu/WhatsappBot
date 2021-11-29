@@ -94,6 +94,8 @@ class Bot {
             await getBomDiaMessage(this, this.message_data.body);
         }
         if(this.has_updates) {
+            console.log("Atualização dispoível!");
+            console.log("Atualizando...");
             updateBot(this);
         }
     }

@@ -10,7 +10,7 @@ async function checkUpdates(bot) {
     try{
         const response = await axios({
             method: "get",
-            url: "https://raw.githubusercontent.com/kamuridesu/js-bot/1.0.0/package.json",
+            url: "https://raw.githubusercontent.com/kamuridesu/js-bot/main/package.json",
             headers: {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1
@@ -24,8 +24,8 @@ async function checkUpdates(bot) {
 }
 
 async function updateBot(bot) {
-    exec("git pull", (error) => {
-        bot.sendMessage("Não foi possivel atualizar> " + error, bot.owner_jid);   
+    exec("git pull origin main", (error) => {
+        bot.sendTextMessage("Não foi possivel atualizar> " + error, bot.owner_jid);   
     })
 }
 
