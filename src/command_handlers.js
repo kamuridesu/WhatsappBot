@@ -22,7 +22,7 @@ async function commandHandler(bot, cmd) {
     switch (command) {
         case "start":
             // retorna uma menssagem de apresentação
-            return await bot.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/js-bot");
+            return await bot.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/WhatsappBot");
             break;
 
         case "test":
