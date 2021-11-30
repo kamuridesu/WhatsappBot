@@ -7,6 +7,8 @@ O principal objetivo deste projeto não é ser um bot cheio de recursos, mas sim
 ## Como usar
 Clone este repositório, crie um JSON chamado config.admin.json com seu numero de telefone e o prefixo do seu bot. Você pode seguir [este exemplo](https://github.com/kamuridesu/js-bot/blob/main/example.config.admin.json). Depois rode o [install.sh](https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/install.sh).
 
+Caso queira criar seu próprio repositório, use o botão de template e altere o git clone no [install.sh](https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/install.sh) e a linha 19: `url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json"` em src/functions.js, redirecionando ambos para seu repositório.
+
 ## Todos os comandos:
 | Comando | Descrição                         |
 |---------|-------------------------------------|
@@ -33,6 +35,8 @@ The main objective of this project is not to be a full featured bot, but to prov
 
 ## How to use
 Clone this repository, create a JSON named config.admin.json with your number and your bot prefix. You can follow [this example](https://github.com/kamuridesu/js-bot/blob/main/example.config.admin.json).
+
+If you want to create your own repository, use the template button and change the git clone on [install.sh](https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/install.sh) and the line 19: `url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json"` in src/functions.js, redirecting both to your repo.
 
 ## All the commands:
 | Command | Description                         |
