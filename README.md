@@ -1,4 +1,4 @@
-# Jashin-bot
+#  WhatsappBot
 
 This is a simple JavaScript WhatApp Bot built on top of [Baileys](https://github.com/adiwajshing/Baileys).
 
