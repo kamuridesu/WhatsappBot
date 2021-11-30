@@ -5,7 +5,7 @@ Este é um simples bot para WhatsApp feito em Javscript construido em cima do [B
 O principal objetivo deste projeto não é ser um bot cheio de recursos, mas sim prover um bot limpo e organizado para você implementar suas próprias funções e comandos facilmente. O bot também tem uma função de atualização automática, então você vai receber as ultimas atualizações se usar este repositório.
 
 ## Como usar
-Clone este repositório, crie um JSON chamado config.admin.json com seu numero de telefone e o prefixo do seu bot. Você pode seguir [este exemplo](https://github.com/kamuridesu/js-bot/blob/main/example.config.admin.json)
+Clone este repositório, crie um JSON chamado config.admin.json com seu numero de telefone e o prefixo do seu bot. Você pode seguir [este exemplo](https://github.com/kamuridesu/js-bot/blob/main/example.config.admin.json). Depois rode o [install.sh](https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/install.sh).
 
 ## Todos os comandos:
 | Comando | Descrição                         |
