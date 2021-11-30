@@ -1,4 +1,4 @@
-import {MessageType, Mimetype, GroupSettingChange } from '@adiwajshing/baileys';
+import {MessageType, Mimetype, GroupSettingChange, getGotStream } from '@adiwajshing/baileys';
 import { createStickerFromMedia } from './user_functions.js';
 import { getAllCommands, getCommandsByCategory } from "../docs/DOC_commands.js";
 
@@ -245,6 +245,26 @@ async function commandHandler(bot, cmd) {
         }
 
         /* %$ENDADMIN$% */
+
+        /* %$BOTOWNER$% */
+
+        case "transmitir": {
+            if(args.length < 1) {
+                error = "Erro! Preciso de argumentos!";
+            } else if(!bot.sender_is_owner) {
+                error = "Erro! Só pode ser enviado pelo dono do bot!";
+            } else {
+                const message = args.join(" ");
+                console.log(message);
+                for(let chat of bot.all_chats) {
+                    bot.sendTextMessage(message, chat.jid);
+                }
+                return await bot.replyText("Transmissão enviada com sucesso!");
+            }
+            return await bot.replyText(error);
+        }
+
+        /* %$ENDBOTOWNER$% */
     }
 }
 

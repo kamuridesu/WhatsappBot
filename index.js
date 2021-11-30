@@ -19,6 +19,7 @@ class Bot {
         this.from = undefined;
         this.sender_is_owner = undefined;
         this.is_group = undefined;
+        this.all_chats = undefined;
         this.group_data = {
             name: undefined,
             id: undefined,
@@ -76,6 +77,7 @@ class Bot {
     async getTextMessageContent(message) {
         // console.log(this.bot_number);
         checkUpdates(this);
+        this.all_chats = await this.conn.chats.all();
         this.message_data = await checkMessageData(message);
 
         if (!message.message) return false;
