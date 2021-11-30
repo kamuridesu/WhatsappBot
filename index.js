@@ -23,7 +23,10 @@ class Bot {
             name: undefined,
             id: undefined,
             members: undefined,
-            admins: undefined,
+            owner: undefined,
+            sender_is_group_owner: undefined,
+            admins_info: undefined,
+            admins_jid: undefined,
             bot_is_admin: undefined,
             sender_is_admin: undefined,
             description: undefined,
@@ -71,7 +74,7 @@ class Bot {
      * @param {object} message menssagem contendo os dados para processamento
      */
     async getTextMessageContent(message) {
-        // console.log(message);
+        // console.log(this.bot_number);
         checkUpdates(this);
         this.message_data = await checkMessageData(message);
 
@@ -94,6 +97,7 @@ class Bot {
             this.sender_is_owner = true;
         }
         if (this.is_group) {
+            // console.log(this.group_data);
             console.log(this.group_data.name + ": " + message.message['conversation']);
         }
         if (this.message_data.body.startsWith(this.prefix)) {

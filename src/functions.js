@@ -51,25 +51,36 @@ async function checkGroupData(group_metadata, bot_number, sender) {
         name: undefined,
         id: undefined,
         members: undefined,
-        admins: undefined,
+        owner: undefined,
+        sender_is_group_owner: undefined,
+        admins_info: undefined,
+        admins_jid: undefined,
         bot_is_admin: undefined,
         sender_is_admin: undefined,
         description: undefined,
+        locked: false,
+        open: true,
         welcome_on: undefined,
     }
+
     group_data.name = group_metadata.subject
     group_data.id = group_metadata.id;
     group_data.members = group_metadata.participants;
+    group_data.owner = group_metadata.owner;
     const admins = group_metadata.participants.map(member => {
         if (member.isAdmin) {
             return member;
         }
     });
-    group_data.admins = admins.filter(element => {
+    group_data.admins_info = admins.filter(element => {
         return element !== undefined;
     });
-    group_data.bot_is_admin = group_metadata.participants.includes(bot_number);
-    group_data.sender_is_admin = group_data.admins.includes(sender);
+    group_data.admins_jid = group_data.admins_info.map(member_id => {
+        return member_id.jid;
+    })
+    group_data.bot_is_admin = group_data.admins_jid.includes(bot_number);
+    group_data.sender_is_admin = group_data.admins_jid.includes(sender);
+    group_data.sender_is_group_owner = group_data.owner == sender;
     group_data.description = group_metadata.desc;
     return group_data;
 }

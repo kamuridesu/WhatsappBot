@@ -1,9 +1,11 @@
+import { Presence } from "@adiwajshing/baileys";
+
 /* USE ESTE ARQUIVO PARA MANIPULAR MENSSAGENS DE TEXTO, NÃO COMANDOS!
 PARA ISSO, CRIE FUNÇÕES PARA CADA MENSSAGEM QUE VOCÊ QUER RESPONDER! 
 ADICIONE SUAS FUNÇÕES NO messageHandler APENAS!*/
 
 async function messageHandler(bot, message) {
-    await bot.conn.updatePresence(bot.from, Presence.composing);
+    await bot.conn.updatePresence(bot.from, Presence.available);
     getBomDiaMessage(bot, message);
 }
 
