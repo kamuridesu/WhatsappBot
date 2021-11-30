@@ -98,9 +98,6 @@ class Bot {
         if (this.sender === this.owner_jid || this.from === this.owner_jid) {
             this.sender_is_owner = true;
         }
-        if (this.is_group) {
-            console.log(this.group_data.name + ": " + message.message['conversation']);
-        }
         if (this.message_data.body.startsWith(this.prefix)) {
             return await commandHandler(this, this.message_data.body);
             // retorna se for command, evita que o bot atualize quando tiver recebendo comando.

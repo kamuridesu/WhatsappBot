@@ -16,10 +16,9 @@ DEPOIS FAÇA IMPORT DESSA FUNÇÃO PARA ESTE ARQUIVO E USE NO SEU COMANDO!
 async function commandHandler(bot, cmd) {
 	const command = cmd.split(bot.prefix)[1].split(" ")[0];
     const args = cmd.split(" ").slice(1);
+    console.log("\x1b[0;31mComando: " + command + ", with args: " + args.join(" ") + "\x1b[0m");
     let error = "Algo deu errado!";
 
-    console.log(args);
-    console.log("Command: " + command);
     switch (command) {
 
         /* %$INFO$% */
