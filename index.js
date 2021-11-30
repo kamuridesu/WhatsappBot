@@ -97,7 +97,6 @@ class Bot {
             this.sender_is_owner = true;
         }
         if (this.is_group) {
-            // console.log(this.group_data);
             console.log(this.group_data.name + ": " + message.message['conversation']);
         }
         if (this.message_data.body.startsWith(this.prefix)) {
@@ -122,7 +121,8 @@ class Bot {
         await this.conn.updatePresence(this.from, Presence.composing);
         await this.conn.sendMessage(this.from, text, MessageType.text, {
             quoted: this.message_data.context
-        })
+        });
+        await this.conn.updatePresence(this.from, Presence.available);
     }
 
     /**
@@ -157,6 +157,7 @@ class Bot {
                 quoted: this.message_data.context
             })
         }
+        await this.conn.updatePresence(this.from, Presence.available);
     }
 
     /**
@@ -168,6 +169,7 @@ class Bot {
         await this.conn.updatePresence(this.from, Presence.composing);
         const to_who = to ? to : this.from;  // se não for definido para quem enviar, vai enviar para quem enviou o comando.
         await this.conn.sendMessage(to_who, text, MessageType.text);
+        await this.conn.updatePresence(to_who, Presence.available);
     }
 }
 

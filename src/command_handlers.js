@@ -1,6 +1,6 @@
 import {MessageType, Mimetype, GroupSettingChange } from '@adiwajshing/baileys';
 import { createStickerFromMedia } from './user_functions.js';
-import { getAllCommands } from "../docs/DOC_commands.js";
+import { getAllCommands, getCommandsByCategory } from "../docs/DOC_commands.js";
 
 /* TODOS OS COMANDOS DEVEM ESTAR NESTE ARQUIVO, MENOS OS COMANDOS SEM PREFIXO.
 CASO PRECISE DE FUNÇÕES GRANDES, SIGA A BOA PRÁTICA E ADICIONE ELAS NO ARQUIVO user_functions.js,
@@ -21,19 +21,27 @@ async function commandHandler(bot, cmd) {
     console.log(args);
     console.log("Command: " + command);
     switch (command) {
+
+        /* %$INFO$% */
+
         case "start":
             // retorna uma menssagem de apresentação
             return await bot.replyText("Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/WhatsappBot");
-            break;
 
         case "ajuda":
         case "menu":
             return await bot.replyText(await getAllCommands());
 
+        case "todoscmd":
+            return await bot.replyText(await getCommandsByCategory());
+
         case "test":
             // retorna um teste
             return await bot.replyText("testando 1 2 3");
-            break;
+
+        /* %$ENDINFO$% */
+
+        /* %$MIDIA$% */
 
         case "music":
             // retorna uma musica
@@ -49,7 +57,10 @@ async function commandHandler(bot, cmd) {
                 return await bot.replyMedia(args[0], MessageType.image, Mimetype.png)
             }
             return await bot.replyText(error);
-            break;
+
+        /* %$ENDMIDIA$% */
+
+        /* %$VARIADOS$% */
 
         case "repeat":
             // repete o que foi dito
@@ -99,6 +110,10 @@ async function commandHandler(bot, cmd) {
             return await bot.replyText(error);
         }
 
+        /* %$ENDVARIADOS$% */
+
+        /* %$ADMIN$% */
+
         case "desc": {
             // muda a descrição do grupo
             if(!bot.is_group) {
@@ -110,9 +125,9 @@ async function commandHandler(bot, cmd) {
             } else {
                 const description = args.join(" ");
                 await bot.conn.groupUpdateDescription(bot.group_data.id, description);
-                return await bot.replyText(error);
+                return await bot.replyText("Atualizado com sucesso!");
             }
-            return await bot.replyText("Atualizado com sucesso!");
+            return await bot.replyText(error);
         }
 
         case "mudanome": {
@@ -170,7 +185,7 @@ async function commandHandler(bot, cmd) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
                 if(bot.message_data.is_quoted_text) {
-                    user_id = console.log(JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
+                    user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
                 } else if(args.length === 1) {
                     user_id = args[0];
                 } else {
@@ -197,7 +212,7 @@ async function commandHandler(bot, cmd) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
                 if(bot.message_data.is_quoted_text) {
-                    user_id = console.log(JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
+                    user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
                 } else if(args.length === 1) {
                     user_id = args[0];
                 } else {
@@ -208,8 +223,6 @@ async function commandHandler(bot, cmd) {
                 user_id = user_id.split("@")[1] + "@s.whatsapp.net";
                 if(!bot.group_data.admins_jid.includes(user_id)) {
                     error = "Erro! Usuário não é admin!";
-                } else if(undefined) {
-
                 } else {
                     console.log(user_id);
                     await bot.conn.groupDemoteAdmin(bot.group_data.id, [user_id]);
@@ -230,6 +243,8 @@ async function commandHandler(bot, cmd) {
             }
             return await bot.replyText(error);
         }
+
+        /* %$ENDADMIN$% */
     }
 }
 

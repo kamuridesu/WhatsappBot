@@ -63,10 +63,13 @@ async function checkGroupData(group_metadata, bot_number, sender) {
         welcome_on: undefined,
     }
 
+
     group_data.name = group_metadata.subject
     group_data.id = group_metadata.id;
     group_data.members = group_metadata.participants;
     group_data.owner = group_metadata.owner;
+    group_data.locked = group_metadata.announce !== undefined ? JSON.parse(JSON.stringify(group_metadata.announce).replace(/"/g, '')) : false;
+    group_data.open = !group_data.locked;
     const admins = group_metadata.participants.map(member => {
         if (member.isAdmin) {
             return member;
