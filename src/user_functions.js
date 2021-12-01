@@ -11,6 +11,7 @@ import { exec } from "child_process";
  * @returns {string} path of exif data
  */
  async function addMetadata(author, packname) {
+    // create exif data
     packname = (packname) ? packname : "kamubot";
     author = (author) ? author.replace(/[^a-zA-Z0-9]/g, '') : "kamubot";  // author cannot have spaces
     const file_path = `./temp/stickers/${author}_${packname}.exif`;
@@ -23,29 +24,29 @@ import { exec } from "child_process";
         "sticker-pack-publisher": author
     });
 
-    const little_endian = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00])
-    const bytes = [0x00, 0x00, 0x16, 0x00, 0x00, 0x00]
+    const little_endian = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00])  // little endian exif header
+    const bytes = [0x00, 0x00, 0x16, 0x00, 0x00, 0x00]  // exif header
 
     let info_json_size = info_json.length;
-    let last = undefined;
+    let last = undefined;  // last byte of info_json_size
 
     if(info_json_size > 256) {
         info_json_size = info_json_size - 256;
-        bytes.unshift(0x01);
+        bytes.unshift(0x01);  // if info_json_size > 256, then use big endian
     } else {
-        bytes.unshift(0x00);
+        bytes.unshift(0x00);  // if info_json_size <= 256, then use little endian
     }
 
-    last = info_json_size.toString(16);
+    last = info_json_size.toString(16);  // convert to hex string and get last byte
     if (info_json_size < 16) {
-        last = "0" + info_json_size;
+        last = "0" + info_json_size;  // if info_json_size < 16, then add a 0 to the front
     }
 
-    const last_buffer = Buffer.from(last, "hex");
-    const buff_from_bytes = Buffer.from(bytes);
-    const buff_from_json = Buffer.from(info_json);
+    const last_buffer = Buffer.from(last, "hex");  // convert to buffer
+    const buff_from_bytes = Buffer.from(bytes);  // convert to buffer from array of bytes
+    const buff_from_json = Buffer.from(info_json); // convert to buffer from json string
 
-    const buffer = Buffer.concat([little_endian, last_buffer, buff_from_bytes, buff_from_json]);
+    const buffer = Buffer.concat([little_endian, last_buffer, buff_from_bytes, buff_from_json]);  // concat buffers to create exif data
 
     fs.writeFileSync(file_path, buffer, (error) => {
         return path;
@@ -61,6 +62,7 @@ import { exec } from "child_process";
  * @param {string} author pack author
  */
 async function createStickerFromMedia(bot, media, packname, author) {
+    // create sticker from image or video
     const random_filename = "./sticker" + Math.floor(Math.random() * 1000);
     await ffmpeg(`./${media}`).input(media).on('start', (cmd) => {
         console.log("Iniciando comando: " + cmd);
@@ -82,13 +84,12 @@ async function createStickerFromMedia(bot, media, packname, author) {
                 return {error: error};
             }
             console.log("Enviando sticker: " + random_filename);
-            await bot.replyMedia(random_filename, MessageType.sticker);
-            console.log("Apagando arquivos locais")
+            await bot.replyMedia(random_filename, MessageType.sticker);  // send sticker
+            console.log("Apagando arquivos locais");
             fs.unlinkSync("./" + media);
             fs.unlinkSync(random_filename);
             console.log("Enviado com sucesso!");
-
-        })
+        });
     })
 
 }

@@ -14,8 +14,8 @@ DEPOIS FAÇA IMPORT DESSA FUNÇÃO PARA ESTE ARQUIVO E USE NO SEU COMANDO!
  * @returns undefined
  */
 async function commandHandler(bot, cmd) {
-	const command = cmd.split(bot.prefix)[1].split(" ")[0];
-    const args = cmd.split(" ").slice(1);
+	const command = cmd.split(bot.prefix)[1].split(" ")[0]; // get the command
+    const args = cmd.split(" ").slice(1); // get the arguments (if any) from the command
     console.log("\x1b[0;31mComando: " + command + ", with args: " + args.join(" ") + "\x1b[0m");
     let error = "Algo deu errado!";
 
@@ -29,9 +29,11 @@ async function commandHandler(bot, cmd) {
 
         case "ajuda":
         case "menu":
+            // retorna uma menssagem de apresentação
             return await bot.replyText(await getAllCommands());
 
         case "todoscmd":
+            // retorna uma menssagem de apresentação
             return await bot.replyText(await getCommandsByCategory());
 
         case "test":
@@ -44,16 +46,17 @@ async function commandHandler(bot, cmd) {
 
         case "music":
             // retorna uma musica
-            return await bot.replyMedia("./config.test/music.mp3", MessageType.audio, Mimetype.mp4Audio)
+            return await bot.replyMedia("./config.test/music.mp3", MessageType.audio, Mimetype.mp4Audio);
             
         case "image_from_url":
+            // retorna uma imagem de uma url
             // baixa uma imagem a partir de uma url e baixa a imagem
             if (args.length < 1) {
                 error = "Error! Preciso que uma url seja passad!";
             } else if (args.length > 1) {
                 error = "Error! Muitos argumentos!";
             } else {
-                return await bot.replyMedia(args[0], MessageType.image, Mimetype.png)
+                return await bot.replyMedia(args[0], MessageType.image, Mimetype.png);
             }
             return await bot.replyText(error);
 
@@ -62,16 +65,17 @@ async function commandHandler(bot, cmd) {
         /* %$VARIADOS$% */
 
         case "repeat":
-            // repete o que foi dito
+            // repete uma menssagem
             return await bot.sendTextMessage(args.join(" "));
 
         case 'sticker': {
-            // cria sticker
+            // retorna um sticker
             let media = undefined;
             let packname = "kamuribot";
             let author = "kamuridesu";
 
             if(args.length >= 1) {
+                // se o usuário passou um argumento, é o nome do pack de stickers que ele quer usar (se existir)
                 if(["help", "ajuda"].includes(args[0])) {
                     return bot.replyText("Use !sticker para criar um sticker, ou !sticker pacote autor para mudar o pacote e o autor!");
                 }
@@ -94,8 +98,10 @@ async function commandHandler(bot, cmd) {
                     error = "Midia não suportada!";
                 }
             } else if(bot.message_data.is_quoted_image) { // verifica se uma imagem foi mencionada
+                // pega a imagem mencionada e transforma em objeto json para poder usar o contextInfo do objeto json (que é a imagem)
                 media = JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo;
             } else if (bot.message_data.is_quoted_video) { // verifica se um video foi mencionado
+                // pega o video mencionado e transforma em objeto json para poder usar o contextInfo do objeto json (que é o video)
                 if(bot.message_data.context.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) { // verifica se um video mencionado tem menos de 11 segundos
                     media = JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo;
                 }
@@ -103,8 +109,8 @@ async function commandHandler(bot, cmd) {
                 error = "Não suportado!";
             }
             if (media !== undefined) {
-                media = await bot.conn.downloadAndSaveMediaMessage(media);
-                return await createStickerFromMedia(bot, media, packname, author);
+                media = await bot.conn.downloadAndSaveMediaMessage(media);  // baixa a midia
+                return await createStickerFromMedia(bot, media, packname, author);  // cria um sticker a partir da midia
             }
             return await bot.replyText(error);
         }
@@ -123,7 +129,7 @@ async function commandHandler(bot, cmd) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
                 const description = args.join(" ");
-                await bot.conn.groupUpdateDescription(bot.group_data.id, description);
+                await bot.conn.groupUpdateDescription(bot.group_data.id, description);  // muda a descrição do grupo
                 return await bot.replyText("Atualizado com sucesso!");
             }
             return await bot.replyText(error);
@@ -139,7 +145,7 @@ async function commandHandler(bot, cmd) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
                 const name = args.join(" ");
-                await bot.conn.groupUpdateSubject(bot.group_data.id, name);
+                await bot.conn.groupUpdateSubject(bot.group_data.id, name);  // muda o nome do grupo
                 return await bot.replyText("Atualizado com sucesso!");
             }
 
@@ -155,7 +161,7 @@ async function commandHandler(bot, cmd) {
             } else if(bot.group_data.locked) {
                 error = "Erro! O grupo já está fechado!";
             } else {
-                await bot.conn.groupSettingChange(bot.group_data.id, GroupSettingChange.messageSend, true);
+                await bot.conn.groupSettingChange(bot.group_data.id, GroupSettingChange.messageSend, true);  // fecha o grupo
                 return await bot.replyText("Grupo trancado!");
             }
             return await bot.replyText(error);
@@ -170,7 +176,7 @@ async function commandHandler(bot, cmd) {
             } else if(bot.group_data.open) {
                 error = "Erro! O grupo já está aberto!";
             } else {
-                await bot.conn.groupSettingChange(bot.group_data.id, GroupSettingChange.messageSend, false);
+                await bot.conn.groupSettingChange(bot.group_data.id, GroupSettingChange.messageSend, false);  // abre o grupo
                 return await bot.replyText("Grupo aberto!");
             }
             return await bot.replyText(error);
@@ -184,7 +190,7 @@ async function commandHandler(bot, cmd) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
                 if(bot.message_data.is_quoted_text) {
-                    user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
+                    user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);  // pega o id do usuário mencionado
                 } else if(args.length === 1) {
                     user_id = args[0];
                 } else {
@@ -192,11 +198,11 @@ async function commandHandler(bot, cmd) {
                 }
             }
             if(user_id !== undefined) {
-                user_id = user_id.split("@")[1] + "@s.whatsapp.net";
+                user_id = user_id.split("@")[1] + "@s.whatsapp.net";  // transforma o id do usuário em um formato válido
                 if(bot.group_data.admins_jid.includes(user_id)) {
                     error = "Erro! Usuário já é admin!";
                 } else {
-                    await bot.conn.groupMakeAdmin(bot.group_data.id, [user_id]);
+                    await bot.conn.groupMakeAdmin(bot.group_data.id, [user_id]);  // promove o usuário
                     return await bot.replyText("Promovido com sucesso!");
                 }
             }
@@ -211,7 +217,7 @@ async function commandHandler(bot, cmd) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
                 if(bot.message_data.is_quoted_text) {
-                    user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);
+                    user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);  // pega o id do usuário mencionado
                 } else if(args.length === 1) {
                     user_id = args[0];
                 } else {
@@ -219,12 +225,12 @@ async function commandHandler(bot, cmd) {
                 }
             }
             if(user_id !== undefined) {
-                user_id = user_id.split("@")[1] + "@s.whatsapp.net";
+                user_id = user_id.split("@")[1] + "@s.whatsapp.net";  // transforma o id do usuário em um formato válido
                 if(!bot.group_data.admins_jid.includes(user_id)) {
                     error = "Erro! Usuário não é admin!";
                 } else {
                     console.log(user_id);
-                    await bot.conn.groupDemoteAdmin(bot.group_data.id, [user_id]);
+                    await bot.conn.groupDemoteAdmin(bot.group_data.id, [user_id]);  // rebaixa o usuário
                     return await bot.replyText("Rebaixado com sucesso!");
                 }
             }
@@ -237,7 +243,7 @@ async function commandHandler(bot, cmd) {
             } else if(!bot.group_data.bot_is_admin) {
                 error = "Erro! Bot não é admin!";
             } else {
-                const group_link = await bot.conn.groupInviteCode(bot.group_data.id);
+                const group_link = await bot.conn.groupInviteCode(bot.group_data.id);  // pega o link do grupo
                 return await bot.replyText('https://chat.whatsapp.com/' + group_link);
             }
             return await bot.replyText(error);
@@ -256,13 +262,14 @@ async function commandHandler(bot, cmd) {
                 const message = args.join(" ");
                 console.log(message);
                 for(let chat of bot.all_chats) {
+                    // envia a mensagem para todos os chats
                     bot.sendTextMessage(message, chat.jid);
                 }
                 return await bot.replyText("Transmissão enviada com sucesso!");
             }
             return await bot.replyText(error);
         }
-
+        
         /* %$ENDBOTOWNER$% */
     }
 }
