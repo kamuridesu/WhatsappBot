@@ -37,7 +37,7 @@ This is a simple JavaScript WhatApp Bot built on top of [Baileys](https://github
 The main objective of this project is not to be a full featured bot, but to provide a clean and organized bot so you can implement your own functions and commands easily. The bot also has an auto update feature, so you'll receive the latest updates if you use this repository. 
 
 ## How to use
-Clone this repository, create a JSON named config.admin.json with your number and your bot prefix. You can follow [this example](https://github.com/kamuridesu/js-bot/blob/main/example.config.admin.json).
+Clone this repository, create a JSON named config.admin.json with your number and your bot prefix. You can follow [this example](https://github.com/kamuridesu/WhatsappBot/blob/main/example.config.admin.json).
 
 If you want to create your own repository, use the template button and change the git clone on [install.sh](https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/install.sh) and the line 19: `url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json"` in src/functions.js, redirecting both to your repo.
 
