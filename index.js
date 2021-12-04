@@ -20,32 +20,6 @@ class Bot {
         this.sender_is_owner = undefined;
         this.is_group = undefined;
         this.all_chats = undefined;
-        this.group_data = {
-            name: undefined,
-            id: undefined,
-            members: undefined,
-            owner: undefined,
-            sender_is_group_owner: undefined,
-            admins_info: undefined,
-            admins_jid: undefined,
-            bot_is_admin: undefined,
-            sender_is_admin: undefined,
-            description: undefined,
-            locked: false,
-            open: true,
-            welcome_on: undefined,
-        }
-        this.message_data = {
-            context: undefined,
-            type: undefined,
-            body: undefined,
-            is_media: false,
-            is_quoted_text: false,
-            is_quoted_video: false,
-            is_quoted_image: false,
-            is_quoted_audio: false,
-            is_quoted_sticker: false,
-        }
     }
 
     async connectToWa() {
@@ -67,7 +41,9 @@ class Bot {
 
         this.conn.on('chat-update', chatUpdate => {
             if (chatUpdate.messages && chatUpdate.count) {
-                this.getMessageContent(chatUpdate.messages.all()[0]); // processa a mensagem
+                if(JSON.parse(JSON.stringify(chatUpdate)).messages[0].messageStubType !== "REVOKE"){  // se não for mensagem deletada
+                    this.getMessageContent(chatUpdate.messages.all()[0]); // processa a mensagem
+                }
             }
         })
     }
@@ -173,6 +149,21 @@ class Bot {
         const to_who = to ? to : this.from;  // define para quem enviar
         await this.conn.sendMessage(to_who, text, MessageType.text); // envia a mensagem
         await this.conn.updatePresence(to_who, Presence.available); // atualiza o status do remetente para online.
+    }
+
+    /**
+     * envia mensagem de texto para alguem com menções
+     * @param {string} text texto a ser enviado
+     * @param {string} mention quem mencionar
+     */
+     async sendTextMessageWithMention(text, mention) { // envia mensagem de texto para alguem com mencion
+        await this.conn.updatePresence(this.from, Presence.composing); // atualiza o status do remetente para "escrevendo"
+        await this.conn.sendMessage(this.from, text, MessageType.text, { // envia a mensagem
+            contextInfo: {
+                "mentionedJid": mention
+            }
+        });
+        await this.conn.updatePresence(mention, Presence.available); // atualiza o status do remetente para online.
     }
 }
 

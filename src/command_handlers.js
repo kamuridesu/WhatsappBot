@@ -189,7 +189,7 @@ async function commandHandler(bot, cmd) {
             } else if(!bot.group_data.sender_is_admin) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
-                if(bot.message_data.is_quoted_text) {
+                if(bot.message_data.is_quoted) {
                     user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);  // pega o id do usuário mencionado
                 } else if(args.length === 1) {
                     user_id = args[0];
@@ -216,7 +216,7 @@ async function commandHandler(bot, cmd) {
             } else if(!bot.group_data.sender_is_admin) {
                 error = "Erro! Este comando só pode ser usado por admins!";
             } else {
-                if(bot.message_data.is_quoted_text) {
+                if(bot.message_data.is_quoted) {
                     user_id = (JSON.parse(JSON.stringify(bot.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo.participant);  // pega o id do usuário mencionado
                 } else if(args.length === 1) {
                     user_id = args[0];
@@ -245,6 +245,21 @@ async function commandHandler(bot, cmd) {
             } else {
                 const group_link = await bot.conn.groupInviteCode(bot.group_data.id);  // pega o link do grupo
                 return await bot.replyText('https://chat.whatsapp.com/' + group_link);
+            }
+            return await bot.replyText(error);
+        }
+
+        case "todos": {
+            if(!bot.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if (args.length === 0) {
+                error = "Erro! Preciso de alguma mensagem!";
+            } else if(!bot.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else {   
+                let message = args.join(" ");
+                let members_id = bot.group_data.members.map(member => member.jid);  // pega os ids dos membros do grupo
+                return await bot.sendTextMessageWithMention(message, members_id);  // envia a mensagem para todos
             }
             return await bot.replyText(error);
         }
