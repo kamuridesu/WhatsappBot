@@ -5,21 +5,28 @@ import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, upda
 import { messageHandler } from './src/chat_handlers.js';
 import fs from "fs";
 
+
+// dataclass para armazenar os dados do bot
+class BotData {
+    constructor() {
+        // carrega as configurações do bot
+        this.sender = undefined;
+        this.from = undefined;
+        this.sender_is_owner = undefined;
+        this.is_group = undefined;
+        this.all_chats = undefined;
+    }
+}
+
+
 // classe Bot, onde as informações vão ser armazenadas e as requisições processadas.
 class Bot {
     constructor() {
         // carrega as configurações do bot
         const owner_data = JSON.parse(fs.readFileSync("./config/config.admin.json"));
         this.conn = undefined;
-        this.has_updates = false;
-        this.bot_number = undefined;
         this.prefix = owner_data.prefix;
         this.owner_jid = owner_data.owner;
-        this.sender = undefined;
-        this.from = undefined;
-        this.sender_is_owner = undefined;
-        this.is_group = undefined;
-        this.all_chats = undefined;
     }
 
     async connectToWa() {
@@ -39,13 +46,14 @@ class Bot {
         await this.conn.connect();
         this.bot_number = this.conn.user.jid; // pega o numero do bot
 
-        this.conn.on('chat-update', chatUpdate => {
+        this.conn.on('chat-update', async chatUpdate => {
             if (chatUpdate.messages && chatUpdate.count) {
-                if(JSON.parse(JSON.stringify(chatUpdate)).messages[0].messageStubType !== "REVOKE"){  // se não for mensagem deletada
+                if(JSON.parse(JSON.stringify(chatUpdate)).messages[0].messageStubType !== "REVOKE"){
                     this.getMessageContent(chatUpdate.messages.all()[0]); // processa a mensagem
                 }
             }
-        })
+        });
+        // this.conn.on('')
     }
 
     /**
@@ -55,38 +63,55 @@ class Bot {
     async getMessageContent(message) {
         // console.log(this.bot_number);
         checkUpdates(this);
-        this.all_chats = await this.conn.chats.all();  // pega todos os grupos
-        this.message_data = await checkMessageData(message); // pega os dados da mensagem
+
+        const bot_data = new BotData();
+        let group_data = undefined;
+
+        bot_data.all_chats = this.conn.chats.all();  // pega todos os grupos
+        const message_data = await checkMessageData(message); // pega os dados da mensagem
 
         if (!message.message) return false; // se não for mensagem, não faz nada.
         if (message.key && message.key.remoteJid == 'status@broadcast') return false; // se for broadcast, não faz nada.
         if (message.key.fromMe) return false; // se for mensagem do bot, não faz nada.
 
-        this.from = message.key.remoteJid;  // pega o remetente da mensagem
-        await this.conn.updatePresence(this.from, Presence.available); // atualiza o status do remetente para online.
-        await this.conn.chatRead(this.from); // marca a mensagem como lida.
-        this.sender = this.from; // pega o remetente da mensagem
-        this.is_group = this.sender.endsWith("@g.us"); // verifica se é um grupo
+        bot_data.from = message.key.remoteJid;  // pega o remetente da mensagem
+        await this.conn.updatePresence(bot_data.from, Presence.available); // atualiza o status do remetente para online.
+        await this.conn.chatRead(bot_data.from); // marca a mensagem como lida.
+        bot_data.sender = bot_data.from; // pega o remetente da mensagem
+        bot_data.sender_name = this.conn.contacts[bot_data.sender] ? this.conn.contacts[bot_data.sender].name : bot_data.sender; // pega o nome do remetente
+        bot_data.is_group = bot_data.sender.endsWith("@g.us"); // verifica se é um grupo
 
-        if (this.is_group) { // se for um grupo
-            this.sender = message.participant // pega o remetente da mensagem
-            const metadata = await this.conn.groupMetadata(this.from) // pega os dados do grupo
-            this.group_data = await checkGroupData(metadata, this.bot_number, this.sender); // processa os dados do grupo
+        if (bot_data.is_group) { // se for um grupo
+            bot_data.sender = message.participant // pega o remetente da mensagem
+            const metadata = await this.conn.groupMetadata(bot_data.from) // pega os dados do grupo
+            group_data = await checkGroupData(metadata, this.bot_number, bot_data.sender); // processa os dados do grupo
         }
-        if (this.sender === this.owner_jid || this.from === this.owner_jid) { // se for o dono do bot
-            this.sender_is_owner = true; // define que o remetente é o dono do bot
+        if (bot_data.sender === this.owner_jid || bot_data.from === this.owner_jid) { // se for o dono do bot
+            bot_data.sender_is_owner = true; // define que o remetente é o dono do bot
         }
-        if (this.message_data.body.startsWith(this.prefix)) { // se a mensagem começar com o prefixo
-            return await commandHandler(this, this.message_data.body); // processa a mensagem como comando
+        if (message_data.body.startsWith(this.prefix)) { // se a mensagem começar com o prefixo
+            return await commandHandler(this, message_data.body, {
+                message_data,
+                bot_data,
+                group_data
+            }); // processa a mensagem como comando
             // retorna se for command, evita que o bot atualize quando tiver recebendo comando.
         } else {
-            await messageHandler(this, this.message_data.body); // processa a mensagem como mensagem
+            await messageHandler(this, message_data.body, {
+                message_data,
+                bot_data,
+                group_data
+            }); // processa a mensagem como mensagem
         }
         if(this.has_updates) { // se tiver atualizações
             console.log("Atualização dispoível!");
             console.log("Atualizando...");
-            await this.conn.updatePresence(this.from, Presence.unavailable);
-            updateBot(this); // atualiza o bot
+            await this.conn.updatePresence(bot_data.from, Presence.unavailable);
+            updateBot(this, {
+                message_data,
+                bot_data,
+                group_data
+            }); // atualiza o bot
         }
     }
 
@@ -94,13 +119,18 @@ class Bot {
      * responde via mensagem de texto para o usuario.
      * @param {string} text texto a ser enviado.
      */
-    async replyText(text) {
+    async replyText(data, text, mention) {
+        const recipient = data.bot_data.from;
+        const context = data.message_data.context;
         // envia uma mensagem de texto para o usuario como resposta.
-        await this.conn.updatePresence(this.from, Presence.composing); // atualiza o status do remetente para "escrevendo"
-        await this.conn.sendMessage(this.from, text, MessageType.text, { // envia a mensagem
-            quoted: this.message_data.context // se for uma mensagem de contexto, envia como contexto.
+        await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
+        await this.conn.sendMessage(recipient, text, MessageType.text, { // envia a mensagem
+            quoted: context,
+            contextInfo: {
+                "mentionedJid": mention ? mention : ""
+            }// se for uma mensagem de contexto, envia como contexto.
         });
-        await this.conn.updatePresence(this.from, Presence.available); // atualiza o status do remetente para online.
+        await this.conn.updatePresence(recipient, Presence.available); // atualiza o status do remetente para online.
     }
 
     /**
@@ -110,9 +140,11 @@ class Bot {
      * @param {Mimetype} mime mime do arquivo a ser enviado
      * @param {string} caption legenda do arquivo
      */
-    async replyMedia(media, message_type, mime, caption) {
+    async replyMedia(data, media, message_type, mime, caption) {
+        const recipient = data.bot_data.from;
+        const context = data.message_data.context;
         // envia uma midia para o usuario como resposta.
-        await this.conn.updatePresence(this.from, Presence.recording); // atualiza o status do remetente para "gravando"
+        await this.conn.updatePresence(recipient, Presence.recording); // atualiza o status do remetente para "gravando"
         if (fs.existsSync(media)) { // se o arquivo existir
             // verifica se o arquivo existe localmente, se sim, o envia
             media = fs.readFileSync(media); // le o arquivo
@@ -126,17 +158,17 @@ class Bot {
         }
         if (message_type === MessageType.sticker) { // se for um sticker
             // se for sticker, não pode enviar caption nem mime.
-            await this.conn.sendMessage(this.from, media, message_type, {
-                quoted: this.message_data.context
+            await this.conn.sendMessage(recipient, media, message_type, {
+                quoted: context
             })
         } else {
-            await this.conn.sendMessage(this.from, media, message_type, { // envia a midia
+            await this.conn.sendMessage(recipient, media, message_type, { // envia a midia
                 mimetype: mime ? mime : '',
                 caption: (caption != undefined) ? caption : "",
-                quoted: this.message_data.context
+                quoted: context
             })
         }
-        await this.conn.updatePresence(this.from, Presence.available); // atualiza o status do remetente para online.
+        await this.conn.updatePresence(recipient, Presence.available); // atualiza o status do remetente para online.
     }
 
     /**
@@ -144,21 +176,25 @@ class Bot {
      * @param {string} text texto a ser enviado
      * @param {string} to para quem enviar
      */
-    async sendTextMessage(text, to) { // envia mensagem de texto para alguem sem mencionar
-        await this.conn.updatePresence(this.from, Presence.composing); // atualiza o status do remetente para "escrevendo"
-        const to_who = to ? to : this.from;  // define para quem enviar
+    async sendTextMessage(data, text, to) { // envia mensagem de texto para alguem sem mencionar
+        const recipient = data.bot_data.from;
+        // const context = data.message_data.context;
+        await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
+        const to_who = to ? to : recipient;  // define para quem enviar
         await this.conn.sendMessage(to_who, text, MessageType.text); // envia a mensagem
         await this.conn.updatePresence(to_who, Presence.available); // atualiza o status do remetente para online.
     }
 
     /**
-     * envia mensagem de texto para alguem com menções
+     * envia mensagem de texto para alguem com mencion
      * @param {string} text texto a ser enviado
      * @param {string} mention quem mencionar
      */
-     async sendTextMessageWithMention(text, mention) { // envia mensagem de texto para alguem com mencion
-        await this.conn.updatePresence(this.from, Presence.composing); // atualiza o status do remetente para "escrevendo"
-        await this.conn.sendMessage(this.from, text, MessageType.text, { // envia a mensagem
+    async sendTextMessageWithMention(text, mention) { // envia mensagem de texto para alguem com mencion
+        const recipient = data.bot_data.from;
+        // const context = data.message_data.context;
+        await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
+        await this.conn.sendMessage(recipient, text, MessageType.text, { // envia a mensagem
             contextInfo: {
                 "mentionedJid": mention
             }
