@@ -1,6 +1,6 @@
 {
   "name": "jswabot",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kamuridesu/js-bot.git"
+    "url": "git+https://github.com/kamuridesu/WhatsappBot.git"
   },
   "author": "kamuridesu",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kamuridesu/js-bot/issues"
+    "url": "https://github.com/kamuridesu/WhatsappBot/issues"
   },
-  "homepage": "https://github.com/kamuridesu/js-bot#readme",
+  "homepage": "https://github.com/kamuridesu/WhatsappBot#readme",
   "dependencies": {
     "@adiwajshing/baileys": "^3.5.3",
     "axios": "^0.24.0",
