@@ -18,7 +18,7 @@ async function checkUpdates(bot) {
     try{
         const response = await axios({
             method: "get",
-            url: "https://raw.githubusercontent.com/kamuridesu/Jashin-bot/main/package.json",  // get version from github
+            url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json",  // get version from github
             headers: {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1
@@ -37,8 +37,13 @@ async function checkUpdates(bot) {
  */
 async function updateBot(bot, data) {
     // updates the bot
-    exec("git pull origin main", (error) => {
-        bot.sendTextMessage(data, "Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
+    exec("git pull origin master", async (error) => {
+        console.log("git pull");
+        if (error){
+            await bot.sendTextMessage(data, "Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
+        } else {
+            await bot.sendTextMessage(data, "Atualizado com sucesso!", bot.owner_jid);  // send success message to owner
+        }
     })
 }
 
