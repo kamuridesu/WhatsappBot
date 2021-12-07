@@ -1,6 +1,7 @@
 import axios from "axios";
 import fs from "fs";
 import { exec } from "child_process";
+import { randomBytes } from "crypto";
 
 
 /* FUNÇOES NECESSÁRIAS PARA O FUNCIONAMENTO IDEAL DO BOT
@@ -17,7 +18,7 @@ async function checkUpdates(bot) {
     try{
         const response = await axios({
             method: "get",
-            url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json",  // get version from github
+            url: "https://raw.githubusercontent.com/kamuridesu/Jashin-bot/main/package.json",  // get version from github
             headers: {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1
@@ -34,10 +35,10 @@ async function checkUpdates(bot) {
  * Updates the bot, on fail sends message to bot owner.
  * @param {Bot} bot bot instance
  */
-async function updateBot(bot) {
+async function updateBot(bot, data) {
     // updates the bot
     exec("git pull origin main", (error) => {
-        bot.sendTextMessage("Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
+        bot.sendTextMessage(data, "Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
     })
 }
 
@@ -105,7 +106,7 @@ async function checkMessageData(message) {
         type: undefined,
         body: undefined,
         is_media: false,
-        is_quoted: false.valueOf,
+        quoted: false,
         is_quoted_text: false,
         is_quoted_video: false,
         is_quoted_image: false,
@@ -134,8 +135,8 @@ async function checkMessageData(message) {
 
     // check if message is a quoted message
     if (type === "extendedTextMessage") {
-        this.message_data.is_quoted = true;
         const message_string = JSON.stringify(message.message);
+        message_data.quoted = true;
         message_data.is_quoted_text = message_string.includes("conversation");
         message_data.is_quoted_audio = message_string.includes("audioMessage");
         message_data.is_quoted_image = message_string.includes("imageMessage");
@@ -157,7 +158,7 @@ async function createMediaBuffer(url, options) {
         options ? options : {}
         const response = await axios({
             method: "get",
-            url,
+            url: url,
             headers: {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1

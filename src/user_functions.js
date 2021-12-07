@@ -61,7 +61,7 @@ import { exec } from "child_process";
  * @param {string} packname name of sticker package
  * @param {string} author pack author
  */
-async function createStickerFromMedia(bot, media, packname, author) {
+async function createStickerFromMedia(bot, data, media, packname, author) {
     // create sticker from image or video
     const random_filename = "./sticker" + Math.floor(Math.random() * 1000);
     await ffmpeg(`./${media}`).input(media).on('start', (cmd) => {
@@ -84,7 +84,7 @@ async function createStickerFromMedia(bot, media, packname, author) {
                 return {error: error};
             }
             console.log("Enviando sticker: " + random_filename);
-            await bot.replyMedia(random_filename, MessageType.sticker);  // send sticker
+            await bot.replyMedia(data, random_filename, MessageType.sticker);  // send sticker
             console.log("Apagando arquivos locais");
             fs.unlinkSync("./" + media);
             fs.unlinkSync(random_filename);
