@@ -4,8 +4,6 @@ import{ createMediaBuffer, postDataToUrl } from './functions.js';
 import { getAllCommands, getCommandsByCategory } from "../docs/DOC_commands.js";
 import { exec } from 'child_process';
 import fs from 'fs';
-import { create } from 'domain';
-// import { createMediaBuffer } from './functions.js';
 
 /* TODOS OS COMANDOS DEVEM ESTAR NESTE ARQUIVO, MENOS OS COMANDOS SEM PREFIXO.
 CASO PRECISE DE FUNÇÕES GRANDES, SIGA A BOA PRÁTICA E ADICIONE ELAS NO ARQUIVO user_functions.js,
@@ -32,13 +30,17 @@ async function commandHandler(bot, cmd, data) {
 
         case "start":
             // retorna uma menssagem de apresentaçãov
-            return await bot.replyText(data, "Hey! Sou um simples bot, porém ainda estou em desevolvimento. Use !menu para ver meus comandos!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/Jashin-bot");
+            return await bot.replyText(data, "Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/Jashin-bot");
 
         case "ajuda":
         case "menu":
         case "todoscmd":
             // retorna uma menssagem de apresentação
             return await bot.replyText(data, await getCommandsByCategory());
+
+        case "test":
+            // retorna um teste
+            return await bot.replyText(data, "testando 1 2 3");
 
         /* %$ENDINFO$% */
 
@@ -127,6 +129,7 @@ async function commandHandler(bot, cmd, data) {
             }
             return await bot.replyText(data, error);
         }
+
 
         /* %$ENDDIVERSAO$% */
 
@@ -252,7 +255,6 @@ async function commandHandler(bot, cmd, data) {
                 if(!data.group_data.admins_jid.includes(user_id)) {
                     error = "Erro! Usuário não é admin!";
                 } else {
-                    console.log(user_id);
                     await bot.conn.groupDemoteAdmin(data.group_data.id, [user_id]);  // rebaixa o usuário
                     return await bot.replyText(data, "Rebaixado com sucesso!");
                 }
@@ -299,7 +301,6 @@ async function commandHandler(bot, cmd, data) {
                 error = "Erro! Só pode ser enviado pelo dono do bot!";
             } else {
                 const message = "[TRANSMISSÃO]\n\n" + args.join(" ");
-                console.log(message);
                 for(let chat of data.bot_data.all_chats) {
                     // envia a mensagem para todos os chats
                     bot.sendTextMessage(data, message, chat.jid);
