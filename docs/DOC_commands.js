@@ -9,7 +9,7 @@ async function getAllCommands() {
     });
 
     // gera a string
-    const document_string = `Kamubot
+    const document_string = `kamubot
 Comandos: 
 -|${cases.join("\n-|")}`
     return document_string;
@@ -44,7 +44,7 @@ async function getCommandsByCategory() {
         return "Erro! Algumas categorias não possuem tags de fechamento!";
     }
 
-    let text = "--==Kamubot==--\n\nComandos:";
+    let text = "--==kamubot==--\n\nComandos:";
     for(let i = 0; i < category_indexes.length; i++) {
         let command_text = command_lines.slice(category_indexes[i].start, category_ends[i]).join("\n").split("case").slice(1).map((cmd) => {
             // Pega apenas o comando
