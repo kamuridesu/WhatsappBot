@@ -5,7 +5,7 @@ import { randomBytes } from "crypto";
 
 
 /* FUNÇOES NECESSÁRIAS PARA O FUNCIONAMENTO IDEAL DO BOT
-NÃO PODEM SER MODIFICADAS OU EXLUÍDAS SEM O CONHECIMENTO NECESSÁRIO PARA MODIFICAR AS OUTRAS!
+NÃO PODEM SER MODIFICADAS OU EXCLUÍDAS SEM O CONHECIMENTO NECESSÁRIO PARA MODIFICAR AS OUTRAS!
 */
 
 /**
@@ -18,7 +18,7 @@ async function checkUpdates(bot) {
     try{
         const response = await axios({
             method: "get",
-            url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json",  // get version from github
+            url: "https://raw.githubusercontent.com/kamuridesu/Jashin-bot/main/package.json",  // get version from github
             headers: {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1
@@ -37,12 +37,10 @@ async function checkUpdates(bot) {
  */
 async function updateBot(bot, data) {
     // updates the bot
-    exec("git pull origin master", async (error) => {
-        console.log("git pull");
-        if (error){
-            await bot.sendTextMessage(data, "Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
-        } else {
-            await bot.sendTextMessage(data, "Atualizado com sucesso!", bot.owner_jid);  // send success message to owner
+    exec("git pull origin main", (error) => {
+        console.log("Rodando git pull");
+        if(error){
+            bot.sendTextMessage(data, "Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
         }
     })
 }
@@ -157,19 +155,19 @@ async function checkMessageData(message) {
  * @param {object} options options to download
  * @returns {object} with response data or error
  */
-async function createMediaBuffer(url, options) {
+async function createMediaBuffer(url, header, responsetype, options) {
     // create buffer from downloaded media
     try {
         options ? options : {}
         const response = await axios({
             method: "get",
             url: url,
-            headers: {
+            headers: header ? header : {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1
             },
             ...options,
-            responseType: 'arraybuffer'
+            responseType: responsetype ? responsetype : 'arraybuffer'
         })
         return response.data
     } catch (e) {
@@ -178,4 +176,35 @@ async function createMediaBuffer(url, options) {
     }
 }
 
-export { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot };
+
+async function postDataToUrl(url, data, header, options) {
+    try {
+        options ? options : {}
+        const response = await axios( {
+            method: "post",
+            url: url,
+            headers : header ? header : {
+                "DNT": 1,
+                "Upgrade-Insecure-Request": 1
+            },
+            data: data ? data : "",
+            ...options,
+            responseType: "json"
+        });
+        return response.data
+    } catch (e) {
+        console.log("errro> " + e);
+        return {media: fs.readFileSync("./etc/error_image.png"), error: e}  // return error image
+    }
+}
+
+
+function checkNumberInMessage(text) {
+    const regex = /@[0-9]{12}/g;
+    if(regex.test(text)) {
+        return text.match(regex).map(number => number.replace("@", "") + "@s.whatsapp.net");
+    }
+    return "";
+}
+
+export { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot, postDataToUrl, checkNumberInMessage };

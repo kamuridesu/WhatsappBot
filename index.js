@@ -1,7 +1,7 @@
 // Imports
 import {WAConnection, MessageType, Mimetype, Presence } from '@adiwajshing/baileys';
 import { commandHandler } from "./src/command_handlers.js";
-import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot } from './src/functions.js';
+import { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot, checkNumberInMessage } from './src/functions.js';
 import { messageHandler } from './src/chat_handlers.js';
 import fs from "fs";
 
@@ -18,6 +18,19 @@ class BotData {
     }
 }
 
+// dataclass para armazenar os dados do grupo
+class GroupData {
+    constructor() {
+        //
+    }
+}
+
+// dataclass para armazenar os dados do usuário
+class MessageData {
+    constructor() {
+        //
+    }
+}
 
 // classe Bot, onde as informações vão ser armazenadas e as requisições processadas.
 class Bot {
@@ -27,6 +40,7 @@ class Bot {
         this.conn = undefined;
         this.prefix = owner_data.prefix;
         this.owner_jid = owner_data.owner;
+        this.has_updates = false;
     }
 
     async connectToWa() {
@@ -104,6 +118,7 @@ class Bot {
             }); // processa a mensagem como mensagem
         }
         if(this.has_updates) { // se tiver atualizações
+            console.log(this.has_updates)
             console.log("Atualização dispoível!");
             console.log("Atualizando...");
             await this.conn.updatePresence(bot_data.from, Presence.unavailable);
@@ -124,6 +139,10 @@ class Bot {
         const context = data.message_data.context;
         // envia uma mensagem de texto para o usuario como resposta.
         await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
+        if (!mention){
+            mention = checkNumberInMessage(text);
+            console.log(mention)
+        }
         await this.conn.sendMessage(recipient, text, MessageType.text, { // envia a mensagem
             quoted: context,
             contextInfo: {
@@ -154,6 +173,8 @@ class Bot {
             if(media.error) { // se não conseguir fazer o download
                 caption = media.error.code, // pega o erro
                 media = media.media // pega a midia do erro
+                message_type = MessageType.image // define o tipo da mensagem como imagem
+                mime = Mimetype.png
             }
         }
         if (message_type === MessageType.sticker) { // se for um sticker
@@ -162,10 +183,17 @@ class Bot {
                 quoted: context
             })
         } else {
+            let mention = "";
+            if (caption){
+                mention = checkNumberInMessage(caption);
+            }
             await this.conn.sendMessage(recipient, media, message_type, { // envia a midia
                 mimetype: mime ? mime : '',
                 caption: (caption != undefined) ? caption : "",
-                quoted: context
+                quoted: context,
+                contextInfo: {
+                    "mentionedJid": mention ? mention : ""
+                }
             })
         }
         await this.conn.updatePresence(recipient, Presence.available); // atualiza o status do remetente para online.
@@ -179,9 +207,15 @@ class Bot {
     async sendTextMessage(data, text, to) { // envia mensagem de texto para alguem sem mencionar
         const recipient = data.bot_data.from;
         // const context = data.message_data.context;
+        let mention = "";
+        mention = checkNumberInMessage(text);
+        await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
         const to_who = to ? to : recipient;  // define para quem enviar
-        await this.conn.updatePresence(to_who, Presence.composing); // atualiza o status do remetente para "escrevendo"
-        await this.conn.sendMessage(to_who, text, MessageType.text); // envia a mensagem
+        await this.conn.sendMessage(to_who, text, MessageType.text, {
+            contextInfo: {
+                "mentionedJid": mention ? mention : ""
+            }
+        }); // envia a mensagem
         await this.conn.updatePresence(to_who, Presence.available); // atualiza o status do remetente para online.
     }
 
@@ -190,7 +224,7 @@ class Bot {
      * @param {string} text texto a ser enviado
      * @param {string} mention quem mencionar
      */
-    async sendTextMessageWithMention(text, mention) { // envia mensagem de texto para alguem com mencion
+    async sendTextMessageWithMention(data, text, mention) { // envia mensagem de texto para alguem com mencion
         const recipient = data.bot_data.from;
         // const context = data.message_data.context;
         await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
