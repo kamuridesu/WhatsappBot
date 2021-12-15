@@ -38,6 +38,17 @@ async function commandHandler(bot, cmd, data) {
             // retorna uma menssagem de apresentação
             return await bot.replyText(data, await getCommandsByCategory());
 
+        case "bug": {
+            // retorna um bug
+            if (args.length < 1) {
+                return await bot.replyText(data, "Por favor, digite o bug que você está reportando!");
+            }
+            const bug = args.join(" ");
+            const sender = "wa.me/" + data.bot_data.sender.split("@")[0];
+            await bot.sendTextMessage(data, "Bug reportado por: " + sender +"\n\n" + bug, bot.owner_jid);
+            return await bot.replyText(data, "Bug reportado com sucesso! O abuso desse comando pode ser punido!");
+        }
+
         case "test":
             // retorna um teste
             return await bot.replyText(data, "testando 1 2 3");

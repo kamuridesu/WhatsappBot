@@ -38,7 +38,7 @@ async function getLinkMessage(bot, message, data) {
     if(match) {
         // sendTextMessageWithMention
         if(data.bot_data.is_group) {
-            await bot.sendTextMessageWithMention(data, "Link!", data.group_data.admins);
+            await bot.replyText(data, "É proíbido enviar links aqui! Os admins foram avisados disso!", data.group_data.admins);
             // return bot.replyText("Não pode mandar link!");
             return true;
         }
