@@ -107,7 +107,7 @@ class Bot {
             console.log("Atualização dispoível!");
             console.log("Atualizando...");
             await this.conn.updatePresence(bot_data.from, Presence.unavailable);
-            updateBot(this, {
+            await updateBot(this, {
                 message_data,
                 bot_data,
                 group_data
@@ -179,8 +179,8 @@ class Bot {
     async sendTextMessage(data, text, to) { // envia mensagem de texto para alguem sem mencionar
         const recipient = data.bot_data.from;
         // const context = data.message_data.context;
-        await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
         const to_who = to ? to : recipient;  // define para quem enviar
+        await this.conn.updatePresence(to_who, Presence.composing); // atualiza o status do remetente para "escrevendo"
         await this.conn.sendMessage(to_who, text, MessageType.text); // envia a mensagem
         await this.conn.updatePresence(to_who, Presence.available); // atualiza o status do remetente para online.
     }
