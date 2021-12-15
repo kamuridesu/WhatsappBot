@@ -141,7 +141,6 @@ class Bot {
         await this.conn.updatePresence(recipient, Presence.composing); // atualiza o status do remetente para "escrevendo"
         if (!mention){
             mention = checkNumberInMessage(text);
-            console.log(mention)
         }
         await this.conn.sendMessage(recipient, text, MessageType.text, { // envia a mensagem
             quoted: context,
