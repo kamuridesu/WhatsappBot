@@ -3,8 +3,6 @@ import pkg from "fluent-ffmpeg";
 const ffmpeg = pkg;
 import fs from "fs";
 import { exec } from "child_process";
-import axios from "axios";
-
 /**
  * adds metadata to sticker pack
  * @param {string} author of the pack
@@ -66,35 +64,32 @@ async function createStickerFromMedia(bot, data, media, packname, author) {
     // create sticker from image or video
     const random_filename = "./sticker" + Math.floor(Math.random() * 1000);
     await ffmpeg(`./${media}`).input(media).on('start', (cmd) => {
-        console.log("Iniciando comando: " + cmd);
+        bot.logger.write("Iniciando comando: " + cmd, 3);
     })
     .addOutputOptions(["-vcodec", "libwebp", "-vf", "scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse"])
     .toFormat('webp')
     .save(random_filename)
     .on("error", (err) => {
-        console.log("error: " + err);
+        bot.logger.write("error: " + err, 2);
         fs.unlinkSync(media);
         return {error: err};
     }).on("end", async () => {
-        console.log("Finalizando arquivo...");
+        bot.logger.write("Finalizando arquivo...", 3);
         exec(`webpmux -set exif ${ await addMetadata(author, packname)} ${random_filename} -o ${random_filename}`, async (error) => {
             if(error) {
-                console.log(error);
+                bot.logger.write(error, 2);
                 fs.unlinkSync("./" + media);
                 fs.unlinkSync(random_filename);
                 return {error: error};
             }
-            console.log("Enviando sticker: " + random_filename);
             await bot.replyMedia(data, random_filename, MessageType.sticker);  // send sticker
-            console.log("Apagando arquivos locais");
             fs.unlinkSync("./" + media);
             fs.unlinkSync(random_filename);
-            console.log("Enviado com sucesso!");
+            bot.logger.write("Enviado com sucesso!", 3);
         });
     })
 
 }
-
 
 function quotationMarkParser(text) {
     // separate the text into words, except if inside quotation marks
