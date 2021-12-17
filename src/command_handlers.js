@@ -1,9 +1,7 @@
-import {MessageType, Mimetype, GroupSettingChange } from '@adiwajshing/baileys';
-import { createStickerFromMedia, quotationMarkParser } from './user_functions.js';
-import{ createMediaBuffer, postDataToUrl } from './functions.js';
-import { getAllCommands, getCommandsByCategory } from "../docs/DOC_commands.js";
-import { exec } from 'child_process';
-import fs from 'fs';
+import {MessageType, Mimetype, GroupSettingChange} from '@adiwajshing/baileys';
+import { createStickerFromMedia } from './user_functions.js';
+import { getCommandsByCategory } from "../docs/DOC_commands.js";
+import { Log } from "../logger/logger.js";;
 
 /* TODOS OS COMANDOS DEVEM ESTAR NESTE ARQUIVO, MENOS OS COMANDOS SEM PREFIXO.
 CASO PRECISE DE FUNÇÕES GRANDES, SIGA A BOA PRÁTICA E ADICIONE ELAS NO ARQUIVO user_functions.js,
@@ -18,10 +16,11 @@ DEPOIS FAÇA IMPORT DESSA FUNÇÃO PARA ESTE ARQUIVO E USE NO SEU COMANDO!
  * @returns undefined
  */
 async function commandHandler(bot, cmd, data) {
+    const logger = new Log("./logger/commands.log");
 	const command = cmd.split(bot.prefix)[1].split(" ")[0]; // get the command
     if(command.length == 0) return; // if the command is empty, return
     const args = cmd.split(" ").slice(1); // get the arguments (if any) from the command
-    console.log("\x1b[0;31mComando: " + command + (args.length < 1 ? '' : ", with args: " + args.join(" ")) + " from " + data.bot_data.from + "\x1b[0m") ; // log the command
+    logger.write("Comando: " + command + (args.length < 1 ? '' : ", with args: " + args.join(" ")) + " from " + data.bot_data.sender + (data.bot_data.is_group ? " on group " + data.group_data.name : ""), 3);
     let error = "Algo deu errado!"; // default error message
 
     switch (command) {
@@ -38,6 +37,10 @@ async function commandHandler(bot, cmd, data) {
             // retorna uma menssagem de apresentação
             return await bot.replyText(data, await getCommandsByCategory());
 
+        case "test":
+            // retorna um teste
+            return await bot.replyText(data, "testando 1 2 3");
+
         case "bug": {
             // retorna um bug
             if (args.length < 1) {
@@ -48,10 +51,6 @@ async function commandHandler(bot, cmd, data) {
             await bot.sendTextMessage(data, "Bug reportado por: " + sender +"\n\n" + bug, bot.owner_jid);
             return await bot.replyText(data, "Bug reportado com sucesso! O abuso desse comando pode ser punido!");
         }
-
-        case "test":
-            // retorna um teste
-            return await bot.replyText(data, "testando 1 2 3");
 
         /* %$ENDINFO$% */
 
@@ -300,8 +299,56 @@ async function commandHandler(bot, cmd, data) {
             return await bot.replyText(data, error);
         }
 
+        case "welcome": {
+            if(!data.bot_data.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if (args.length === 0) {
+                error = "Erro! Preciso de alguma mensagem!";
+            } else if(!data.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else {
+                let message = args.join(" ");
+                if (message === "off") {
+                    data.group_data.db_data.welcome_message = "";
+                    data.group_data.db_data.welcome_on = false;
+                    bot.database.update("group_infos", data.group_data.db_data);
+                    return await bot.replyText(data, "Mensagem de boas vindas desativada!");
+                } else {
+                    data.group_data.db_data.welcome_message = message;
+                    data.group_data.db_data.welcome_on = true;
+                    bot.database.update("group_infos", data.group_data.db_data);
+                    return await bot.replyText(data, "Mensagem de boas vindas ativada!");
+                }
+            }
+            return await bot.replyText(data, error);
+        }
+
+        case "antilink": {
+            if(!data.bot_data.is_group) {
+                error = "Erro! O chat atual não é um grupo!";
+            } else if(!data.group_data.sender_is_admin) {
+                error = "Erro! Este comando só pode ser usado por admins!";
+            } else if (args.length === 0) {
+                error = "Erro! Preciso saber se é on/off!";
+            } else if(["on", "off"].includes(args[0])) {
+                if(args[0] === "on") {
+                    data.group_data.db_data.anti_link_on = true;
+                    bot.database.update("group_infos", data.group_data.db_data);
+                    return await bot.replyText(data, "Antilink ativado!");
+                } else {
+                    data.group_data.db_data.anti_link_on = false;
+                    bot.database.update("group_infos", data.group_data.db_data);
+                    return await bot.replyText(data, "Antilink desativado!");
+                }
+            } else {
+                error = "Erro! Preciso saber se é on/off!";
+            }
+            return await bot.replyText(data, error);
+        }
+
 
         /* %$ENDADMIN$% */
+
 
         /* %$BOTOWNER$% */
 
