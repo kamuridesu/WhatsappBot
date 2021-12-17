@@ -1,8 +1,7 @@
 import axios from "axios";
 import fs from "fs";
 import { exec } from "child_process";
-import { randomBytes } from "crypto";
-
+import { Log } from "../logger/logger.js";
 
 /* FUNÇOES NECESSÁRIAS PARA O FUNCIONAMENTO IDEAL DO BOT
 NÃO PODEM SER MODIFICADAS OU EXCLUÍDAS SEM O CONHECIMENTO NECESSÁRIO PARA MODIFICAR AS OUTRAS!
@@ -27,7 +26,7 @@ async function checkUpdates(bot) {
         });
         bot.has_updates = (response.data.version != actual_version);  // check if there is an update
     } catch (e) {
-        console.log(e);
+        bot.logger.write(e, 2)
     }
 }
 
@@ -38,8 +37,9 @@ async function checkUpdates(bot) {
 async function updateBot(bot, data) {
     // updates the bot
     exec("git pull origin main", (error) => {
-        console.log("Rodando git pull");
+        bot.logger.write("Rodando git pull", 3);
         if(error){
+            bot.logger.write(error, 2);
             bot.sendTextMessage(data, "Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
         }
     })
@@ -155,7 +155,8 @@ async function checkMessageData(message) {
  * @param {object} options options to download
  * @returns {object} with response data or error
  */
-async function createMediaBuffer(url, header, responsetype, options) {
+async function getDataFromUrl(url, header, responsetype, options) {
+    const logger = new Log("./logger/functions.log");
     // create buffer from downloaded media
     try {
         options ? options : {}
@@ -171,13 +172,14 @@ async function createMediaBuffer(url, header, responsetype, options) {
         })
         return response.data
     } catch (e) {
-        console.log("errro> " + e);
+        logger.write(e, 2)
         return {media: fs.readFileSync("./etc/error_image.png"), error: e}  // return error image
     }
 }
 
 
 async function postDataToUrl(url, data, header, options) {
+    const logger = new Log("./logger/functions.log");
     try {
         options ? options : {}
         const response = await axios( {
@@ -193,7 +195,7 @@ async function postDataToUrl(url, data, header, options) {
         });
         return response.data
     } catch (e) {
-        console.log("errro> " + e);
+        logger.write(e, 2)
         return {media: fs.readFileSync("./etc/error_image.png"), error: e}  // return error image
     }
 }
@@ -207,4 +209,4 @@ function checkNumberInMessage(text) {
     return "";
 }
 
-export { checkGroupData, createMediaBuffer, checkMessageData, checkUpdates, updateBot, postDataToUrl, checkNumberInMessage };
+export { checkGroupData, getDataFromUrl, checkMessageData, checkUpdates, updateBot, postDataToUrl, checkNumberInMessage };
