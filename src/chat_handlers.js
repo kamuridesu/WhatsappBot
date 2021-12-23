@@ -1,4 +1,3 @@
-import { Presence } from "@adiwajshing/baileys";
 import { Log } from "../logger/logger.js";
 
 /* USE ESTE ARQUIVO PARA MANIPULAR MENSSAGENS DE TEXTO, NÃO COMANDOS!
@@ -10,7 +9,6 @@ async function messageHandler(bot, message, data) {
     // TODO: Adicione suas funções aqui!
     const logger = new Log("./logger/messages.log");
     logger.write("Mensagem: " + (message ? message : data.message_data.type) + " from " + data.bot_data.sender + (data.bot_data.is_group ? " on group " + data.group_data.name : ""));
-    await bot.conn.updatePresence(bot.from, Presence.available);
     if(await getBomDiaMessage(bot, data, message)) {
         return;
     } else if(await getLinkMessage(bot, message, data)) {
