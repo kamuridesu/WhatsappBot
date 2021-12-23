@@ -1,7 +1,7 @@
-import {MessageType, Mimetype, GroupSettingChange} from '@adiwajshing/baileys';
+import {MessageType, Mimetype, GroupSettingChange } from '@adiwajshing/baileys';
 import { createStickerFromMedia } from './user_functions.js';
-import { getCommandsByCategory } from "../docs/DOC_commands.js";
-import { Log } from "../logger/logger.js";;
+import { getCommandsByCategory, getAjuda } from "../docs/DOC_commands.js";
+import { Log } from "../logger/logger.js";
 
 /* TODOS OS COMANDOS DEVEM ESTAR NESTE ARQUIVO, MENOS OS COMANDOS SEM PREFIXO.
 CASO PRECISE DE FUNÇÕES GRANDES, SIGA A BOA PRÁTICA E ADICIONE ELAS NO ARQUIVO user_functions.js,
@@ -17,7 +17,7 @@ DEPOIS FAÇA IMPORT DESSA FUNÇÃO PARA ESTE ARQUIVO E USE NO SEU COMANDO!
  */
 async function commandHandler(bot, cmd, data) {
     const logger = new Log("./logger/commands.log");
-	const command = cmd.split(bot.prefix)[1].split(" ")[0]; // get the command
+	const command = cmd.split(bot.prefix)[1].split(" ")[0].toLowerCase(); // get the command
     if(command.length == 0) return; // if the command is empty, return
     const args = cmd.split(" ").slice(1); // get the arguments (if any) from the command
     logger.write("Comando: " + command + (args.length < 1 ? '' : ", with args: " + args.join(" ")) + " from " + data.bot_data.sender + (data.bot_data.is_group ? " on group " + data.group_data.name : ""), 3);
@@ -28,21 +28,30 @@ async function commandHandler(bot, cmd, data) {
         /* %$INFO$% */
 
         case "start":
-            // retorna uma menssagem de apresentaçãov
-            return await bot.replyText(data, "Hey! Sou um simples bot, porém ainda estou em desevolvimento!\nPara acompanhar meu progresso, acesse: https://github.com/kamuridesu/Jashin-bot");
+            // comment="retorna uma apresentação do bot"
+            return await bot.replyText(data, "Hey! Sou um simples bot, porém ainda estou em desevolvimento!\n\nGrupo oficial: https://chat.whatsapp.com/GiZaCU2nmtxIWeCfe98kvi\nCaso queira me apoiar no Patreon: https://www.patreon.com/kamuridesu");
 
         case "ajuda":
+            // comment="retorna um menu de comandos, envie um comando para saber mais sobre o mesmo, ex: !ajuda !ajuda"
         case "menu":
-        case "todoscmd":
-            // retorna uma menssagem de apresentação
+            // comment="retorna um menu de comandos, envie um comando para saber mais sobre o mesmo, ex: !menu !menu"
+        case "todoscmd": {
+            // comment="retorna um menu de comandos, envie um comando para saber mais sobre o mesmo, ex: !todos_cmd !todos_cmd"
+            if(args.length >= 1) {
+                const command_name = args[0];
+                const command_data = await getAjuda(command_name);
+                if(!command_data) return await bot.replyText(data, "Este comando não existe!");
+                return await bot.replyText(data, command_data);
+            }
             return await bot.replyText(data, await getCommandsByCategory());
+        }
 
         case "test":
-            // retorna um teste
+            // comment="retorna um teste"
             return await bot.replyText(data, "testando 1 2 3");
 
         case "bug": {
-            // retorna um bug
+            // comment="reporta um bug para o dono, ex: !bug detalhes do bug"
             if (args.length < 1) {
                 return await bot.replyText(data, "Por favor, digite o bug que você está reportando!");
             }
@@ -57,6 +66,7 @@ async function commandHandler(bot, cmd, data) {
         /* %$MIDIA$% */
 
         case "image_from_url":{
+            // comment="gera uma imagem a partir de uma url, ex: !image_from_url http://kamuridesu.tech/static/images/github_logo.png"
             // retorna uma imagem de uma url
             // baixa uma imagem a partir de uma url e baixa a imagem
             if (args.length < 1) {
@@ -70,6 +80,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "perfil": {
+            // comment="pega a imagem de perfil do usuário, ex: !perfil @kamuridesu"
             if(args.length == 0) {
                 error = "Preciso que um user seja mencionado!";
             } else if(data.message_data.context.message.extendedTextMessage) {
@@ -90,10 +101,11 @@ async function commandHandler(bot, cmd, data) {
         /* %$DIVERSAO$% */
 
         case "repeat":
-            // repete uma menssagem
+            // comment="repete a mensagem, ex: !repeat oi"
             return await bot.sendTextMessage(data, args.join(" "));
 
         case 'sticker': {
+            // comment="cria sticker"
             // retorna um sticker
             let media = undefined;
             let packname = "kamuribot";
@@ -140,12 +152,12 @@ async function commandHandler(bot, cmd, data) {
             return await bot.replyText(data, error);
         }
 
-
         /* %$ENDDIVERSAO$% */
 
         /* %$ADMIN$% */
 
         case "desc": {
+            // comment="muda a descrição do grupo, ex: desc oi eu sou goku"
             // muda a descrição do grupo
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
@@ -162,6 +174,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "mudanome": {
+            // comment="muda o nome do grupo, ex: mudanome oi eu sou goku"
             // muda o nome do grupo
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
@@ -181,6 +194,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "trancar": {
+            // comment="tranca o grupo"
             // fecha o grupo, apenas admins podem falar
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
@@ -198,6 +212,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "abrir": {
+            // comment="abre o grupo"
             // abre o grupo, todos podem falar
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
@@ -215,6 +230,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "promover":{
+            // comment="promove um membro para admin, ex: !promover @goku"
             let user_id = undefined;
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
@@ -244,6 +260,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "rebaixar":{
+            // comment="rebaixa um admin, ex: !rebaixar @goku"
             let user_id = undefined;
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
@@ -273,6 +290,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "link": {
+            // comment="pega o link do grupo"
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
             } else if(!data.group_data.bot_is_admin) {
@@ -285,6 +303,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "todos": {
+            // comment="marca todos os membros do grupo em hidetag, ex: !todos oi"
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
             } else if (args.length === 0) {
@@ -300,6 +319,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "welcome": {
+            // comment="configura mensagem de boas vindas, use !welcome off para desligar. ex: !welcome oi"
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
             } else if (args.length === 0) {
@@ -324,6 +344,7 @@ async function commandHandler(bot, cmd, data) {
         }
 
         case "antilink": {
+            // comment="configura o bloqueio de links, ex: !antilink [off/on]"
             if(!data.bot_data.is_group) {
                 error = "Erro! O chat atual não é um grupo!";
             } else if(!data.group_data.sender_is_admin) {
@@ -346,13 +367,12 @@ async function commandHandler(bot, cmd, data) {
             return await bot.replyText(data, error);
         }
 
-
         /* %$ENDADMIN$% */
-
 
         /* %$BOTOWNER$% */
 
         case "transmitir": {
+            // comment="transmite mensagens para todos os chats"
             if(args.length < 1) {
                 error = "Erro! Preciso de argumentos!";
             } else if(!data.bot_data.sender_is_owner) {
