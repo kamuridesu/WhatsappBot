@@ -12,10 +12,10 @@ class Log {
             3: "DEBUG"
         };
         this.log_level_colors = {
-            0: "\x1b[1;37m",
-            1: "\x1b[1;33m",
-            2: "\x1b[0;31m",
-            3: "\x1b[1;34m"
+            0: "\x1b[1;37m", // white
+            1: "\x1b[1;33m", // yellow
+            2: "\x1b[0;31m", // red
+            3: "\x1b[1;34m" // blue
         }
         this.reset_color = "\x1b[0m";
         this.output_enabled = true;

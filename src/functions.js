@@ -17,7 +17,7 @@ async function checkUpdates(bot) {
     try{
         const response = await axios({
             method: "get",
-            url: "https://raw.githubusercontent.com/kamuridesu/Jashin-bot/main/package.json",  // get version from github
+            url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json",  // get version from github
             headers: {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1
@@ -156,7 +156,9 @@ async function checkMessageData(message) {
  * @returns {object} with response data or error
  */
 async function getDataFromUrl(url, header, responsetype, options) {
+    url = encodeURI(url);
     const logger = new Log("./logger/functions.log");
+    // logger.write("Downloading media from url: " + url, 3);
     // create buffer from downloaded media
     try {
         options ? options : {}
@@ -170,6 +172,7 @@ async function getDataFromUrl(url, header, responsetype, options) {
             ...options,
             responseType: responsetype ? responsetype : 'arraybuffer'
         })
+        // logger.write("Media downloaded", 3);
         return response.data
     } catch (e) {
         logger.write(e, 2)
@@ -209,4 +212,37 @@ function checkNumberInMessage(text) {
     return "";
 }
 
-export { checkGroupData, getDataFromUrl, checkMessageData, checkUpdates, updateBot, postDataToUrl, checkNumberInMessage };
+function quotationMarkParser(text) {
+    // separate the text into words, except if inside quotation marks
+    if(!text) {
+        return [];
+    }
+    let words = text.split(/\s+/);
+    let in_quotes = false;
+    let quote_start = 0;
+    let quote_end = 0;
+    let quote_words = [];;
+    for(let i = 0; i < words.length; i++) {
+        if(words[i].startsWith("\"")) {
+            if(words[i].endsWith("\"")) {
+                quote_words.push(words[i].replace(/\"/g, "").trim());
+            }
+            else if(!in_quotes) {
+                in_quotes = true;
+                quote_start = i;
+            }
+        } else if(words[i].endsWith("\"")) {
+            in_quotes = false;
+            quote_end = i;
+            let quote = words.slice(quote_start, quote_end + 1).join(" ");
+            quote_words.push(quote.replace(/\"/g, "").trim());
+        } else {
+            if(!in_quotes) {
+                quote_words.push(words[i].trim());
+            }
+        }
+    }
+    return quote_words;
+}
+
+export { checkGroupData, getDataFromUrl, checkMessageData, checkUpdates, updateBot, postDataToUrl, checkNumberInMessage, quotationMarkParser };

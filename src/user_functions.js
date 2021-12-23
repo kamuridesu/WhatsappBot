@@ -1,8 +1,12 @@
 import {MessageType, Mimetype} from '@adiwajshing/baileys';
+import { getDataFromUrl, postDataToUrl } from './functions.js';
 import pkg from "fluent-ffmpeg";
 const ffmpeg = pkg;
 import fs from "fs";
 import { exec } from "child_process";
+import axios from "axios";
+import { threadId } from 'worker_threads';
+
 /**
  * adds metadata to sticker pack
  * @param {string} author of the pack
@@ -50,7 +54,6 @@ import { exec } from "child_process";
     fs.writeFileSync(file_path, buffer, (error) => {
         return path;
     });
-
 }
 
 /**
@@ -91,39 +94,119 @@ async function createStickerFromMedia(bot, data, media, packname, author) {
 
 }
 
-function quotationMarkParser(text) {
-    // separate the text into words, except if inside quotation marks
-    if(!text) {
-        return [];
+
+async function convertGifToMp4(bot, data, media) {
+    const random_filename = "./gif" + Math.floor(Math.random() * 1000);
+    await ffmpeg(`./${media}`).input(media).on('start', (cmd) => {
+        bot.logger.write("Iniciando comando: " + cmd, 3);
+    })
+    .addOutputOptions(["-movflags", "faststart", "-pix_fmt yuv420p", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2"])
+    .toFormat('mp4')
+    .save(random_filename)
+    .on("error", (err) => {
+        bot.logger.write("error: " + err, 2);
+        fs.unlinkSync(media);
+        return {error: err};
     }
-    let words = text.split(/\s+/);
-    let in_quotes = false;
-    let quote_start = 0;
-    let quote_end = 0;
-    let quote_words = [];;
-    for(let i = 0; i < words.length; i++) {
-        if(words[i].startsWith("\"")) {
-            if(words[i].endsWith("\"")) {
-                quote_words.push(words[i].replace(/\"/g, "").trim());
-            }
-            else if(!in_quotes) {
-                in_quotes = true;
-                quote_start = i;
-            }
-        } else if(words[i].endsWith("\"")) {
-            in_quotes = false;
-            quote_end = i;
-            let quote = words.slice(quote_start, quote_end + 1).join(" ");
-            quote_words.push(quote.replace(/\"/g, "").trim());
-        } else {
-            if(!in_quotes) {
-                quote_words.push(words[i].trim());
-            }
-        }
-    }
-    return quote_words;
+    ).on("end", async () => {
+        bot.logger.write("Finalizando arquivo...", 3);
+        await bot.replyMedia(data, random_filename, MessageType.video, Mimetype.gif);  // send video
+        fs.unlinkSync("./" + media);
+        fs.unlinkSync(random_filename);
+        bot.logger.write("Enviado com sucesso!", 3);
+    });
+
 }
 
 
+class Waifu {
+    constructor() {
+        this.sfw_categories = {
+            categories: [
+                "waifu",
+                "neko",
+                "shinobu",
+                "megumin",
+                "bully",
+                "cuddle",
+                "cry",
+                "hug",
+                "awoo",
+                "kiss",
+                "lick",
+                "pat",
+                "smug",
+                "bonk",
+                "yeet",
+                "blush",
+                "smile",
+                "wave",
+                "highfive",
+                "handhold",
+                "nom",
+                "bite",
+                "glomp",
+                "slap",
+                "kill",
+                "kick",
+                "happy",
+                "wink",
+                "poke",
+                "dance",
+                "cringe"
+            ],
+            name: "sfw"
+        };
 
-export { createStickerFromMedia, quotationMarkParser };
+        this.nsfw = {
+            categories:[
+                "waifu",
+                "neko",
+                "trap",
+                "blowjob"
+            ],
+            name: "nsfw"
+        };
+
+        this.api_base = "https://api.waifu.pics/";
+    }
+
+    async get(type, category, many) {
+        const categories = type == ("sfw") ? this.sfw_categories : (type == ("nsfw") ? this.nsfw : null);
+        if(many && !category) {
+            return {error: "Invalid categoria"};
+        } else if (category === undefined) {
+            category = categories.categories[Math.floor(Math.random() * categories.categories.length)];
+        } else if(!categories.categories.includes(category)) {
+            return {error: "Categoria não encontrada!"};
+        }
+        let response = {error: "Não foi possível obter a imagem"};
+        if(many) {
+            response = await postDataToUrl(this.api_base + "many/" + categories.name + "/" + category, {"Accept": "application/json"});    
+        } else {
+            response = await getDataFromUrl(this.api_base + categories.name + "/" + category, {"Accept": "application/json"}, "json");
+        }  
+        if(response.error || response.message) {
+            return {error: response.error};
+        }
+        if(response.url || response.files) {
+            return response;
+        }
+    }
+
+    async ajuda(type) {
+        const categories = type == ("sfw") ? this.sfw_categories : (type == ("nsfw") ? this.nsfw : null);
+        if(categories) {
+            return {
+                message: "Categorias disponíveis:\n\n" + categories.categories.join("\n"),
+                name: categories.name
+            }
+        } else {
+            return {error: "Categoria não encontrada"};
+        }
+    }
+
+}
+
+
+export { createStickerFromMedia, convertGifToMp4, Waifu };
