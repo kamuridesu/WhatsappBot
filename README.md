@@ -1,6 +1,7 @@
 #  WhatsappBot
 [![CodeFactor](https://www.codefactor.io/repository/github/kamuridesu/whatsappbot/badge)](https://www.codefactor.io/repository/github/kamuridesu/whatsappbot)
 ![GitHub Repo stars](https://img.shields.io/github/stars/kamuridesu/WhatsappBot?style=social)
+![GitHub issues by-label](https://img.shields.io/github/issues/kamuridesu/WhatsappBot/help%20wanted.svg)
 
 
 Este é um simples bot para WhatsApp feito em Javscript construido em cima do [Baileys](https://github.com/adiwajshing/Baileys).
