@@ -17,7 +17,7 @@ async function checkUpdates(bot) {
     try{
         const response = await axios({
             method: "get",
-            url: "https://raw.githubusercontent.com/kamuridesu/Jashin-bot/main/package.json",  // get version from github
+            url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json",  // get version from github
             headers: {
                 "DNT": 1,
                 "Upgrade-Insecure-Request": 1
