@@ -19,7 +19,7 @@
   "homepage": "https://github.com/kamuridesu/WhatsappBot#readme",
   "dependencies": {
     "@adiwajshing/baileys": "^3.5.3",
-    "axios": "^0.24.0",
+    "axios": "^0.25.0",
     "fluent-ffmpeg": "^2.1.2",
     "sequelize": "^6.12.0-beta.3",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master"
