@@ -1,50 +1,3 @@
-import axios from "axios";
-import fs from "fs";
-import { exec } from "child_process";
-import { Log } from "../logger/logger.js";
-
-/* FUNÇOES NECESSÁRIAS PARA O FUNCIONAMENTO IDEAL DO BOT
-NÃO PODEM SER MODIFICADAS OU EXCLUÍDAS SEM O CONHECIMENTO NECESSÁRIO PARA MODIFICAR AS OUTRAS!
-*/
-
-/**
- * Checks for update, compares the actual version with the version on my repo.
- * @param {Bot} bot bot instance
- */
-async function checkUpdates(bot) {
-    // checks for updates on github
-    let actual_version = JSON.parse(fs.readFileSync("./package.json")).version;  // get actual version
-    try{
-        const response = await axios({
-            method: "get",
-            url: "https://raw.githubusercontent.com/kamuridesu/WhatsappBot/main/package.json",  // get version from github
-            headers: {
-                "DNT": 1,
-                "Upgrade-Insecure-Request": 1
-            },
-            responseType: 'blob'
-        });
-        bot.has_updates = (response.data.version != actual_version);  // check if there is an update
-    } catch (e) {
-        bot.logger.write(e, 2)
-    }
-}
-
-/**
- * Updates the bot, on fail sends message to bot owner.
- * @param {Bot} bot bot instance
- */
-async function updateBot(bot, data) {
-    // updates the bot
-    exec("git pull origin main", (error) => {
-        bot.logger.write("Rodando git pull", 3);
-        if(error){
-            bot.logger.write(error, 2);
-            bot.sendTextMessage(data, "Não foi possivel atualizar> " + error, bot.owner_jid);  // send error message to owner
-        }
-    })
-}
-
 /**
  * Checks the metadata for one group
  * @param {object} group_metadata 
@@ -149,59 +102,6 @@ async function checkMessageData(message) {
     return message_data;
 }
 
-/**
- * Create buffer from downloaded media
- * @param {string} url url where the media will be downloaded
- * @param {object} options options to download
- * @returns {object} with response data or error
- */
-async function getDataFromUrl(url, header, responsetype, options) {
-    url = encodeURI(url);
-    const logger = new Log("./logger/functions.log");
-    // logger.write("Downloading media from url: " + url, 3);
-    // create buffer from downloaded media
-    try {
-        options ? options : {}
-        const response = await axios({
-            method: "get",
-            url: url,
-            headers: header ? header : {
-                "DNT": 1,
-                "Upgrade-Insecure-Request": 1
-            },
-            ...options,
-            responseType: responsetype ? responsetype : 'arraybuffer'
-        })
-        // logger.write("Media downloaded", 3);
-        return response.data
-    } catch (e) {
-        logger.write(e, 2)
-        return {media: fs.readFileSync("./etc/error_image.png"), error: e}  // return error image
-    }
-}
-
-
-async function postDataToUrl(url, data, header, options) {
-    const logger = new Log("./logger/functions.log");
-    try {
-        options ? options : {}
-        const response = await axios( {
-            method: "post",
-            url: url,
-            headers : header ? header : {
-                "DNT": 1,
-                "Upgrade-Insecure-Request": 1
-            },
-            data: data ? data : "",
-            ...options,
-            responseType: "json"
-        });
-        return response.data
-    } catch (e) {
-        logger.write(e, 2)
-        return {media: fs.readFileSync("./etc/error_image.png"), error: e}  // return error image
-    }
-}
 
 
 function checkNumberInMessage(text) {
@@ -245,4 +145,4 @@ function quotationMarkParser(text) {
     return quote_words;
 }
 
-export { checkGroupData, getDataFromUrl, checkMessageData, checkUpdates, updateBot, postDataToUrl, checkNumberInMessage, quotationMarkParser };
+export { checkGroupData, checkMessageData, checkNumberInMessage, quotationMarkParser };
