@@ -1,6 +1,7 @@
 import { Database } from "../storage/db.js";
 import { Log } from "../storage/logger.js"
 import { checkGroupData, checkMessageData } from "../functions/parsers.js";
+import { MessageHandler } from "../chat_handlers/message_handlers.js";
 
 class RawMessageHandlers {
     constructor(bot_instance, type, message) {
@@ -33,7 +34,7 @@ class RawMessageHandlers {
         }
         let sender_data = await this.database_connection.get_user_infos(bot_data.sender);
         if (sender_data == null) {
-            await this.database_connection.insert("user_infos", {
+            await this.database_connection.insert("users", {
                 jid: bot_data.sender,
                 slot_chances: 50
             });
@@ -59,15 +60,24 @@ class RawMessageHandlers {
             group_data = await checkGroupData(metadata, this.bot.bot_number, bot_data.sender);
             const database_data = await this.database_connection.get_group_infos(group_data.id);
             if(database_data == null) {
-                await this.database_connection.insert("group_infos", {
+                await this.database_connection.insert("groups", {
                     jid: group_data.id,
+                    name: group_data.name,
                     welcome: false,
                     welcome_message: "",
                     antilink: false,
                     nsfw: false,
                     chatbot: false,
-                    group_data: JSON.stringify(group_data)
+                    members: group_data.members,
+                    admins: group_data.admins,
+                    locked: group_data.locked,
+                    description: group_data.description,
+                    owner: group_data.owner,
+                    sender_is_group_owner: group_data.sender_is_owner,
+                    bot_is_admin: group_data.bot_is_admin,
+                    sender_is_admin: group_data.sender_is_admin
                 });
+                group_data = await this.database_connection.get_group_infos(group_data.id);
             }
         }
 
@@ -75,7 +85,13 @@ class RawMessageHandlers {
         if (message_data.body.startsWith(this.bot.prefix)) {
             return commandHandler(this.bot, this.message, this.type, bot_data, group_data, message_data);
         }
-        return messageHandler(this.bot, this.message, this.type, bot_data, group_data, message_data);
+        return new MessageHandler(this.bot, this.message, {bot_data, group_data, message_data}, this.type).process();
+    }
+
+    async close() {
+        this.bot = undefined;
+        this.message = undefined;
+        this.type = undefined;
     }
 }
 

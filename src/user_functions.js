@@ -13,7 +13,7 @@ import { threadId } from 'worker_threads';
  * @param {string} packname of the pack
  * @returns {string} path of exif data
  */
- async function addMetadata(author, packname) {
+async function addMetadata(author, packname) {
     // create exif data
     packname = (packname) ? packname : "kamubot";
     author = (author) ? author.replace(/[^a-zA-Z0-9]/g, '') : "kamubot";  // author cannot have spaces
@@ -78,7 +78,8 @@ async function createStickerFromMedia(bot, data, media, packname, author) {
         return {error: err};
     }).on("end", async () => {
         bot.logger.write("Finalizando arquivo...", 3);
-        exec(`webpmux -set exif ${ await addMetadata(author, packname)} ${random_filename} -o ${random_filename}`, async (error) => {
+        const path = await addMetadata(author, packname);
+        exec(`webpmux -set exif ${path} ${random_filename} -o ${random_filename}`, async (error) => {
             if(error) {
                 bot.logger.write(error, 2);
                 fs.unlinkSync("./" + media);
@@ -88,6 +89,7 @@ async function createStickerFromMedia(bot, data, media, packname, author) {
             await bot.replyMedia(data, random_filename, MessageType.sticker);  // send sticker
             fs.unlinkSync("./" + media);
             fs.unlinkSync(random_filename);
+            fs.unlinkSync(path);
             bot.logger.write("Enviado com sucesso!", 3);
         });
     })

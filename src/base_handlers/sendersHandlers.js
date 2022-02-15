@@ -28,6 +28,8 @@ class MessageSenders {
         } catch (e) {
             this.logger.write(`[${data.type}] Error: ${e}`);
             return;
+        } finally {
+            await this.close();
         }
     }
 
@@ -63,6 +65,8 @@ class MessageSenders {
         } catch (e) {
             this.logger.write(`[${data.type}] Error: ${e}`);
             return;
+        } finally {
+            await this.close();
         }
     }
 
@@ -71,7 +75,7 @@ class MessageSenders {
         let mention = checkNumberInMessage(text);
         try {
             await this.bot.wa_connection.updatePresence(recipient, Presence.composing);
-            const to_who = to_who ? to_who : data.bot_data.from;
+            to_who = to_who ? to_who : data.bot_data.from;
             await this.bot.wa_connection.sendMessage(to_who, text, MessageType.text, {
                 contextInfo: {
                     mentionedJid: mention ? mention : ""
@@ -81,7 +85,13 @@ class MessageSenders {
         } catch (e) {
             this.logger.write(`[${data.type}] Error: ${e}`);
             return;
+        } finally {
+            await this.close();
         }
+    }
+
+    async close() {
+        this.bot = undefined;
     }
 
 }

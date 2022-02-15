@@ -15,6 +15,7 @@ class Bot {
         this.owner_jid = owner_data.jid;
         this.has_updates = false;
         this.database = new Database();
+        this.database.sync();
         this.logger = new Log("./logger/main_log.log");
     }
 
@@ -53,7 +54,7 @@ class Bot {
         this.wa_connection.on("group-participants-update", async group_participants_update => {
             try {
                 if (group_participants_update.action == "add") {
-                    this.addMemberListener(group_participants_update.jid, group_participants_update.participants[0]);
+                    // this.addMemberListener(group_participants_update.jid, group_participants_update.participants[0]);
                 }
             } catch (e) {
                 this.logger.write(e, 2);

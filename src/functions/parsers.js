@@ -6,7 +6,6 @@
  * @returns {object} group_data;
  */
 async function checkGroupData(group_metadata, bot_number, sender) {
-    // checks the metadata for one group
     let group_data = {
         name: undefined,
         id: undefined,
@@ -19,8 +18,6 @@ async function checkGroupData(group_metadata, bot_number, sender) {
         sender_is_admin: undefined,
         description: undefined,
         locked: false,
-        open: true,
-        welcome_on: undefined,
     }
 
     group_data.name = group_metadata.subject
@@ -28,7 +25,6 @@ async function checkGroupData(group_metadata, bot_number, sender) {
     group_data.members = group_metadata.participants;
     group_data.owner = group_metadata.owner;
     group_data.locked = group_metadata.announce !== undefined ? JSON.parse(JSON.stringify(group_metadata.announce).replace(/"/g, '')) : false;  // check if group is locked or not (if it has an announcement)
-    group_data.open = !group_data.locked;  // check if group is open or not (if it has an announcement)
     const admins = group_metadata.participants.map(member => {
         // get admins info
         if (member.isAdmin) {
