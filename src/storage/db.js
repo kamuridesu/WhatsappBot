@@ -1,16 +1,15 @@
 import Sequelize from 'sequelize';
 
 // create our new instance of Sequelize with the database name 
-const database = new Sequelize({
-    dialect: 'sqlite',
-    storage: './databases/database.sqlite',
-    logging: false
-});
 
 
 class Database {
     constructor() {
-        this.database = database;
+        this.database  = new Sequelize({
+            dialect: 'sqlite',
+            storage: './databases/database.sqlite',
+            logging: false
+        });
         this.models = {};
         this.models.users = this.database.define('Users', {
             id: {
@@ -114,7 +113,8 @@ class Database {
         return await this.models.users.findOne({
             where: {
                 jid: jid
-            }
+            },
+            logging: false
         });
     }
 
@@ -122,7 +122,8 @@ class Database {
         return await this.models.groups.findOne({
             where: {
                 jid: jid
-            }
+            },
+            logging: false
         });
     }
 
@@ -130,12 +131,23 @@ class Database {
         return await this.models.misc.findOne({
             where: {
                 _type: type
-            }
+            },
+            logging: false
         });
     }
 
     async insert(table, data) {
+        this.database.options.logging = false;
         await this.models[table].create(data);
+        return await this.sync();
+    }
+
+    async update(table, data, where) {
+        this.database.options.logging = false;
+        await this.models[table].update(data, {
+            where: where,
+            logging: false
+        });
         return await this.sync();
     }
 

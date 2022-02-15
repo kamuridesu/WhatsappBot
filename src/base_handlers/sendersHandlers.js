@@ -1,7 +1,9 @@
-import { getDataFromUrl } from "../functions/network;js";
+import { networkCommunicate } from "../functions/network.js";
 import { MessageType, Mimetype, Presence } from "@adiwajshing/baileys"
 import fs from 'fs';
 import { checkNumberInMessage } from "../functions/parsers.js";
+import { Log } from "../storage/logger.js";
+import { Database } from "../storage/db.js";
 
 class MessageSenders {
     constructor(bot_instance) {
@@ -70,18 +72,17 @@ class MessageSenders {
         }
     }
 
-    async sendMessage(data, text, to_who) {
+    async sendTextMessage(data, text, to_who) {
         const recipient = data.bot_data.from;
         let mention = checkNumberInMessage(text);
         try {
-            await this.bot.wa_connection.updatePresence(recipient, Presence.composing);
-            to_who = to_who ? to_who : data.bot_data.from;
+            to_who = to_who ? to_who : (recipient ? recipient : "");
+            if (to_who == "") return;
             await this.bot.wa_connection.sendMessage(to_who, text, MessageType.text, {
                 contextInfo: {
                     mentionedJid: mention ? mention : ""
                 }
             });
-            await this.bot.wa_connection.updatePresence(recipient, Presence.online);
         } catch (e) {
             this.logger.write(`[${data.type}] Error: ${e}`);
             return;
@@ -97,4 +98,4 @@ class MessageSenders {
 }
 
 
-export default MessageSenders;
+export { MessageSenders };

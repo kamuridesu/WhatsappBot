@@ -43,6 +43,9 @@ async function checkGroupData(group_metadata, bot_number, sender) {
     group_data.sender_is_admin = group_data.admins_jid.includes(sender);
     group_data.sender_is_group_owner = group_data.owner == sender;
     group_data.description = group_metadata.desc;
+    group_data.members = JSON.stringify(group_data.members);
+    group_data.admins_info = JSON.stringify(group_data.admins_info);
+    group_data.admins_jid = JSON.stringify(group_data.admins_jid);
     return group_data;
 }
 

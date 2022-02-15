@@ -4,6 +4,7 @@ import fs from 'fs'
 import { Database } from './src/storage/db.js';
 import { Log } from './src/storage/logger.js';
 import { RawMessageHandlers } from './src/base_handlers/raw_handlers.js';
+import { checkUpdates, updateBot } from './src/functions/network.js';
 
 
 class Bot {
@@ -13,7 +14,6 @@ class Bot {
         this.wa_connection = undefined;
         this.bot_prefix = owner_data.prefix;
         this.owner_jid = owner_data.jid;
-        this.has_updates = false;
         this.database = new Database();
         this.database.sync();
         this.logger = new Log("./logger/main_log.log");
@@ -60,6 +60,10 @@ class Bot {
                 this.logger.write(e, 2);
             }
         });
+
+        if (await checkUpdates()) {
+            updateBot(this);
+        }
     }
 }
 

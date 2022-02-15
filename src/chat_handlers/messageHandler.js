@@ -1,5 +1,6 @@
 import { MessageSenders } from "../base_handlers/sendersHandlers.js";
 import { networkCommunicate } from "../functions/network.js";
+import { Log } from "../storage/logger.js";
 
 class MessageHandler {
     constructor(client, message, data, options) {
@@ -9,6 +10,8 @@ class MessageHandler {
         this.data = data;
         this.logger = new Log("./logger/messageHandler.log");
         this.sender = new MessageSenders(this.client);
+        // console.log(data.bot_data.sender);
+        this.logger.write(`Message: ${message}` + " from " + data.bot_data.sender + (data.bot_data.is_group ? " on group " + data.group_data.name : ""));
     }
 
     async getBomDiaMessage() {
@@ -20,8 +23,9 @@ class MessageHandler {
 
     async antilink() {
         if (/https:\/\/(www\.)?chat.whatsapp.com\/[A-za-z0-9]+/gi.test(this.message)) {
-            if(this.data.bot_data.is_group && this.data.group_data.db_data.anti_link_on) {
-                await this.sender.replyText(this.data, "É proíbido enviar links aqui! Os admins foram avisados disso!", data.group_data.admins);
+            if(this.data.bot_data.is_group && this.data.group_data.antilink) {
+                console.log(this.data.group_data.admins.map(admin => admin.jid));
+                await this.sender.replyText(this.data, "É proíbido enviar links aqui! Os admins foram avisados disso!");
                 // return bot.replyText("Não pode mandar link!");
                 return true;
             }

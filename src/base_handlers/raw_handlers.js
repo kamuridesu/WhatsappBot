@@ -1,7 +1,8 @@
 import { Database } from "../storage/db.js";
 import { Log } from "../storage/logger.js"
 import { checkGroupData, checkMessageData } from "../functions/parsers.js";
-import { MessageHandler } from "../chat_handlers/message_handlers.js";
+import { MessageHandler } from "../chat_handlers/messageHandler.js";
+import { syncGroupDBData } from "../functions/setter.js";
 
 class RawMessageHandlers {
     constructor(bot_instance, type, message) {
@@ -13,8 +14,8 @@ class RawMessageHandlers {
     }
 
     async processMessage() {
-        let group_data = undefined;
         let bot_data = {};
+        let group_data = undefined;
 
         try {
             bot_data.all_chats = this.bot.wa_connection.chats.all();
@@ -56,36 +57,21 @@ class RawMessageHandlers {
                 this.logger.write(`[${this.type}] Error: ${e}`, 2);
                 return;
             }
-
             group_data = await checkGroupData(metadata, this.bot.bot_number, bot_data.sender);
-            const database_data = await this.database_connection.get_group_infos(group_data.id);
-            if(database_data == null) {
-                await this.database_connection.insert("groups", {
-                    jid: group_data.id,
-                    name: group_data.name,
-                    welcome: false,
-                    welcome_message: "",
-                    antilink: false,
-                    nsfw: false,
-                    chatbot: false,
-                    members: group_data.members,
-                    admins: group_data.admins,
-                    locked: group_data.locked,
-                    description: group_data.description,
-                    owner: group_data.owner,
-                    sender_is_group_owner: group_data.sender_is_owner,
-                    bot_is_admin: group_data.bot_is_admin,
-                    sender_is_admin: group_data.sender_is_admin
-                });
-                group_data = await this.database_connection.get_group_infos(group_data.id);
-            }
+            await syncGroupDBData(this.database_connection, group_data);
+            group_data = await this.database_connection.get_group_infos(group_data.id);
+            group_data.members = JSON.parse(group_data.members);
+            group_data.admins = JSON.parse(group_data.admins);
         }
+        // console.log(group_data);
 
         const message_data = await checkMessageData(this.message);
         if (message_data.body.startsWith(this.bot.prefix)) {
-            return commandHandler(this.bot, this.message, this.type, bot_data, group_data, message_data);
+            await commandHandler(this.bot, message_data.body, this.type, bot_data, group_data, message_data);
+            return this.close();
         }
-        return new MessageHandler(this.bot, this.message, {bot_data, group_data, message_data}, this.type).process();
+        await new MessageHandler(this.bot, message_data.body, {bot_data, group_data, message_data}, this.type).process();
+        return this.close();
     }
 
     async close() {
