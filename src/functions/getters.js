@@ -1,3 +1,5 @@
+import fs from "fs";
+
 /**
  * Checks the metadata for one group
  * @param {object} group_metadata 
@@ -169,4 +171,8 @@ async function getVideoLength(data) {
     return undefined;
 }
 
-export { checkGroupData, checkMessageData, checkNumberInMessage, quotationMarkParser, getMedia, getVideoLength };
+function getRoutes() {
+    return JSON.parse(fs.readFileSync("./config/routes/routes.json"));
+}
+
+export { checkGroupData, checkMessageData, checkNumberInMessage, quotationMarkParser, getMedia, getVideoLength, getRoutes };

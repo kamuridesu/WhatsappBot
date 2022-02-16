@@ -18,6 +18,7 @@ async function networkCommunicate(url, responsetype, method, header, data, optio
         });
         return response
     } catch (e) {
+        console.log(e);
         logger.write(e, 2)
         return {media: fs.readFileSync("./etc/error_image.png"), error: e}  // return error image
     }

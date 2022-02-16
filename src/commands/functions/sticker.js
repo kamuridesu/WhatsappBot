@@ -18,9 +18,9 @@ class MakeSticker{
 
     async makePack() {
         if (this.args.length == 2) {
-            return {packaname: this.args[0], author: this.args[1]};
+            return [this.args[0], this.args[1].replace(/[^a-zA-Z0-9]/g, '')];
         }
-        return {packaname: "Jashin-bot", author: "kamuridesu"};
+        return ["Jashin-bot", "kamuridesu"];
     }
 
 
@@ -46,8 +46,6 @@ class MakeSticker{
      */
     async addMetadata(author, packname) {
         // create exif data
-        packname = (packname) ? packname : "kamubot";
-        author = (author) ? author.replace(/[^a-zA-Z0-9]/g, '') : "kamubot";  // author cannot have spaces
         const file_path = `./temp/stickers/${author}_${packname}.exif`;
         if(fs.existsSync(file_path)) {
             return file_path;
@@ -93,7 +91,7 @@ class MakeSticker{
         ffmpeg(media).input(media).on('start', (cmd) => {
             this.logger.write("Convertendo arquivo para sticker: " + cmd, 3);
         })
-        .addOutputOptions(["-vcodec", "libwebp", "-vf", "scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse"])
+        .addOutputOptions(["-vcodec", "libwebp", "-vf", "scale=512:512:flags=lanczos:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000,setsar=1"])
         .toFormat('webp')
         .save(random_filename)
         .on('error', async (err) => {

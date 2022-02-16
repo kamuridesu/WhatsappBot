@@ -30,8 +30,6 @@ class MessageSenders {
         } catch (e) {
             this.logger.write(`[${data.type}] Error: ${e}`);
             return;
-        } finally {
-            await this.close();
         }
     }
 
@@ -65,10 +63,8 @@ class MessageSenders {
             });
             await this.bot.wa_connection.updatePresence(recipient, Presence.online);
         } catch (e) {
-            this.logger.write(`[${data.type}] Error: ${e}`);
+            this.logger.write(`[${data.type}] Error: ${e}`, 2);
             return;
-        } finally {
-            await this.close();
         }
     }
 
@@ -86,13 +82,7 @@ class MessageSenders {
         } catch (e) {
             this.logger.write(`[${data.type}] Error: ${e}`);
             return;
-        } finally {
-            await this.close();
         }
-    }
-
-    async close() {
-        this.bot = undefined;
     }
 
 }
