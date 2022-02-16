@@ -1,6 +1,8 @@
-import { help } from "./help.js";
+import { getHelp } from "./help.js";
+import { makeSticker } from "./sticker.js"
 
 
 export {
-    help
+    getHelp,
+    makeSticker
 }

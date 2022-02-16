@@ -1,6 +1,6 @@
 import { Database } from "../storage/db.js";
 import { Log } from "../storage/logger.js"
-import { checkGroupData, checkMessageData } from "../functions/parsers.js";
+import { checkGroupData, checkMessageData } from "../functions/getters.js";
 import { MessageHandler } from "../chat_handlers/messageHandler.js";
 import { syncGroupDBData } from "../functions/setter.js";
 import { CommandHandler } from "../chat_handlers/commandHandler.js";
@@ -68,7 +68,6 @@ class RawMessageHandlers {
 
         const message_data = await checkMessageData(this.message);
         if (message_data.body.startsWith(this.bot.prefix)) {
-            console.log(message_data.body);
             await new CommandHandler(this.bot, message_data.body, {bot_data, group_data, message_data}, this.type).process();
             return this.close();
         }

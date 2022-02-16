@@ -144,4 +144,29 @@ function quotationMarkParser(text) {
     return quote_words;
 }
 
-export { checkGroupData, checkMessageData, checkNumberInMessage, quotationMarkParser };
+
+async function getMedia(client, data) {
+    // get media from message
+    let media = undefined;
+    if (data.message_data.is_media) {
+        media = data.message_data.context;
+    } else if (data.message_data.is_quoted_image || data.message_data.is_quoted_video) { // verifica se uma imagem foi mencionada
+        media = JSON.parse(JSON.stringify(data.message_data.context).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo;
+    }
+    if (media) {
+        return await client.wa_connection.downloadAndSaveMediaMessage(media, "./temp/stickers/" + Math.round(Math.random() * 10000));
+    }
+    return media;
+}
+
+
+async function getVideoLength(data) {
+    if(data.message_data.is_media && data.message_data.type == "videoMessage") {
+        return data.message_data.context.message.videoMessage.seconds
+    } else if (data.message_data.is_quoted_video) {
+        return data.message_data.context.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds;
+    }
+    return undefined;
+}
+
+export { checkGroupData, checkMessageData, checkNumberInMessage, quotationMarkParser, getMedia, getVideoLength };

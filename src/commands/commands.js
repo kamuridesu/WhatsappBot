@@ -20,8 +20,16 @@ class Commands {
             case "help":
             case "menu":
             case "ajuda":
-                return commands.help(this.client, this.data);
+                return commands.getHelp(this.client, this.data);
             /* %$INFO$% */
+
+            /* %$MIDIA$% */
+            case "sticker":
+            case "f":
+            case "figurinha":
+                return commands.makeSticker(this.client, this.args, this.data);
+            /* %$MIDIA$% */
+
         }
     }
 

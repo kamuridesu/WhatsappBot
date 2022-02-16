@@ -1,7 +1,7 @@
 import { networkCommunicate } from "../functions/network.js";
 import { MessageType, Mimetype, Presence } from "@adiwajshing/baileys"
 import fs from 'fs';
-import { checkNumberInMessage } from "../functions/parsers.js";
+import { checkNumberInMessage } from "../functions/getters.js";
 import { Log } from "../storage/logger.js";
 import { Database } from "../storage/db.js";
 
