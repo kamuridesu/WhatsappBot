@@ -8,7 +8,7 @@ import { Database } from "../storage/db.js";
 class MessageSenders {
     constructor(bot_instance) {
         this.bot = bot_instance;
-        this.logger = new Log("./logger/senders_handlers.log");
+        this.logger = new Log("./logs/senders_handlers.log");
         this.database_connection = new Database();
     }
 
@@ -43,7 +43,7 @@ class MessageSenders {
             if(fs.existsSync(media)) {
                 media = fs.readFileSync(media);
             } else if(typeof(media) == "string") {
-                media = await getDataFromUrl(media);
+                media = await networkCommunicate(media);
                 if (media.error) {
                     caption = media.error.message,
                     message_type = MessageType.image,

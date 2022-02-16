@@ -3,13 +3,14 @@ import { Log } from "../storage/logger.js"
 import { checkGroupData, checkMessageData } from "../functions/parsers.js";
 import { MessageHandler } from "../chat_handlers/messageHandler.js";
 import { syncGroupDBData } from "../functions/setter.js";
+import { CommandHandler } from "../chat_handlers/commandHandler.js";
 
 class RawMessageHandlers {
     constructor(bot_instance, type, message) {
         this.bot = bot_instance;
         this.message = message;
         this.type = type;
-        this.logger = new Log("./logger/raw_handlers.log");
+        this.logger = new Log("./logs/raw_handlers.log");
         this.database_connection = new Database();
     }
 
@@ -67,7 +68,8 @@ class RawMessageHandlers {
 
         const message_data = await checkMessageData(this.message);
         if (message_data.body.startsWith(this.bot.prefix)) {
-            await commandHandler(this.bot, message_data.body, this.type, bot_data, group_data, message_data);
+            console.log(message_data.body);
+            await new CommandHandler(this.bot, message_data.body, {bot_data, group_data, message_data}, this.type).process();
             return this.close();
         }
         await new MessageHandler(this.bot, message_data.body, {bot_data, group_data, message_data}, this.type).process();

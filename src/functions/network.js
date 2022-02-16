@@ -5,7 +5,7 @@ import fs from 'fs';
 
 async function networkCommunicate(url, responsetype, method, header, data, options) {
     url = encodeURI(url);
-    const logger = new Log("./logger/functions.log");
+    const logger = new Log("./logs/functions.log");
     try {
         options = options ? options : {}
         const response = await axios({

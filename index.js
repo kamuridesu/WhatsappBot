@@ -12,11 +12,11 @@ class Bot {
         this.config = config;
         const owner_data = JSON.parse(fs.readFileSync("./config/config.admin.json"));
         this.wa_connection = undefined;
-        this.bot_prefix = owner_data.prefix;
+        this.prefix = owner_data.prefix;
         this.owner_jid = owner_data.jid;
         this.database = new Database();
         this.database.sync();
-        this.logger = new Log("./logger/main_log.log");
+        this.logger = new Log("./logs/main_log.log");
     }
 
     /**

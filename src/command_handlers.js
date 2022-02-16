@@ -16,7 +16,7 @@ DEPOIS FAÇA IMPORT DESSA FUNÇÃO PARA ESTE ARQUIVO E USE NO SEU COMANDO!
  * @returns undefined
  */
 async function commandHandler(bot, cmd, data) {
-    const logger = new Log("./logger/commands.log");
+    const logger = new Log("./logs/commands.log");
 	const command = cmd.split(bot.prefix)[1].split(" ")[0].toLowerCase(); // get the command
     if(command.length == 0) return; // if the command is empty, return
     const args = cmd.split(" ").slice(1); // get the arguments (if any) from the command
