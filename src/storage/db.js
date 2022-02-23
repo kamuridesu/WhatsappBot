@@ -49,6 +49,10 @@ class Database {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
             },
+            antilink_level: {
+                type: Sequelize.INTEGER,
+                defaultValue: 0
+            },
             chatbot: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false

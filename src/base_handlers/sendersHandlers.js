@@ -36,12 +36,12 @@ class MessageSenders {
     async replyMedia(data, media, message_type, mime, caption) {
         const recipient = data.bot_data.from;
         const context = data.message_data.context;
-        try {
+        // try {
             await this.bot.wa_connection.updatePresence(recipient, Presence.recording);
             if(fs.existsSync(media)) {
                 media = fs.readFileSync(media);
             } else if(typeof(media) == "string") {
-                media = await networkCommunicate(media);
+                media = (await networkCommunicate(media, "bytearray", "GET")).data;
                 if (media.error) {
                     caption = media.error.message,
                     message_type = MessageType.image,
@@ -53,19 +53,20 @@ class MessageSenders {
             if (caption) {
                 mention = checkNumberInMessage(caption);
             }
-            await this.bot.wa_connection.sendMessage(recipient, media, message_type, {
+            const options = {
                 mimetype: mime ? mime : "",
-                caption,
+                caption: caption ? caption : "",
                 quoted: context,
                 contextInfo: {
                     mentionedJid: mention ? mention : ""
                 }
-            });
+            }
+            await this.bot.wa_connection.sendMessage(recipient, media, message_type, options);
             await this.bot.wa_connection.updatePresence(recipient, Presence.online);
-        } catch (e) {
-            this.logger.write(`[${data.type}] Error: ${e}`, 2);
-            return;
-        }
+        // } catch (e) {
+        //     this.logger.write(`["replyMedia"] Error: ${e}`, 2);
+        //     return;
+        // }
     }
 
     async sendTextMessage(data, text, to_who) {

@@ -2,6 +2,10 @@ import { Log } from "../storage/logger.js";
 import { Database } from "../storage/db.js";
 import * as commands from "./functions/commands.js";
 import { MessageSenders } from "../base_handlers/sendersHandlers.js";
+import { networkCommunicate } from "../functions/network.js";
+import { MessageType, Mimetype } from "@adiwajshing/baileys";
+import { getMention } from "../functions/getters.js";
+import fs from 'fs';
 
 class Commands {
     constructor(client, data, command, args, message, options) {
@@ -49,6 +53,17 @@ class Commands {
                 return new commands.Downloader(this.client, this.data, this.args, "audio").download();
             case "video":  // description="Baixa um video do youtube, uso: !video (enviando o link do youtube ou o nome do video)"
                 return new commands.Downloader(this.client, this.data, this.args, "video").download();
+            case "dlimage": // description="Baixa uma imagem a partir do link, uso: !dlimage (enviando o link da imagem)"
+                if (this.args.length < 1) return await this.sender.replyText(this.data, "Por favor, envie um link para eu baixar.");
+                return this.sender.replyMedia(this.data, await networkCommunicate(this.args.join(" "), "bytearray"), MessageType.image);
+            case "perfilimg": // description="Baixa uma imagem do perfil do usuário, uso: !perfilimg @Jashi-bot"
+                if (this.args.length < 1) return await this.sender.replyText(this.data, "Por favor, envie um usuário para eu baixar o seu perfil.");
+                const mention = getMention(this.data);
+                if (mention.length < 1) return await this.sender.replyText(this.data, "Por favor, envie um usuário para eu baixar o seu perfil.");
+                let ppic = undefined;
+                try {ppic = await this.client.wa_connection.getProfilePicture(mention);} catch (e) { ppic = fs.readFileSync(process.cwd() + "/etc/default_profile.png"); }
+                console.log(ppic);
+                return this.sender.replyMedia(this.data, ppic, MessageType.image);
             /* %$MIDIA$% */
         }
     }
@@ -60,7 +75,12 @@ class Commands {
     }
 
     async bug() {
-        await this.sender.sendTextMessage(this.data, "Por favor, envie um bug para o meu criador.\n", this.client.owner_jid);
+        if (this.args.length < 1) {
+            return await this.sender.replyText(this.data, "Por favor, envie um bug para o meu criador.\n");
+        }
+        const output = "Bug enviado por " + "wa.me/" + this.data.bot_data.sender.split("@")[0] + "\n\n" + this.args.join(" ");
+        await this.sender.sendTextMessage(this.data, output, this.client.owner_jid);
+        return await this.sender.replyText(this.data, "Bug enviado com sucesso!\n");
     }
 
     async close() {

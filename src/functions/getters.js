@@ -175,4 +175,8 @@ function getRoutes() {
     return JSON.parse(fs.readFileSync("./config/routes/routes.json"));
 }
 
-export { checkGroupData, checkMessageData, checkNumberInMessage, quotationMarkParser, getMedia, getVideoLength, getRoutes };
+function getMention(data) {
+    return data.message_data.context.message.extendedTextMessage.contextInfo.mentionedJid[0];
+}
+
+export { checkGroupData, checkMessageData, checkNumberInMessage, quotationMarkParser, getMedia, getVideoLength, getRoutes, getMention };
