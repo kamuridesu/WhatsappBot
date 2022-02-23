@@ -100,7 +100,7 @@ async function checkMessageData(message) {
         message_data.is_quoted_video = message_string.includes("videoMessage");
         message_data.is_quoted_sticker = message_string.includes("stickerMessage");
     }
-    return message_data;
+    return JSON.parse(JSON.stringify(message_data));
 }
 
 

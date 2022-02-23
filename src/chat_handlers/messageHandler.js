@@ -11,7 +11,9 @@ class MessageHandler {
         this.logger = new Log("./logs/messageHandler.log");
         this.sender = new MessageSenders(this.client);
         // console.log(data.bot_data.sender);
-        this.logger.write(`Message: ${message}` + " from " + data.bot_data.sender + (data.bot_data.is_group ? " on group " + data.group_data.name : ""));
+        if(message != "") {
+            this.logger.write(`Message: ${message}` + " from " + data.bot_data.sender + (data.bot_data.is_group ? " on group " + data.group_data.name : ""));
+        }
     }
 
     async getBomDiaMessage() {

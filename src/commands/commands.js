@@ -19,37 +19,36 @@ class Commands {
     async processCommand() {
         switch (this.command) {
             /* %$INFO$% */
-            case "start":
+            case "start": // description="Mostra uma mensagem de apresentação"
                 return this.start();
-            case "help":
-            case "menu":
-            case "ajuda":
-                return commands.getHelp(this.client, this.data);
-            case "bug":
+            case "help": // description="Mostra uma mensagem de ajuda, uso: !help [comando]"
+            case "menu":  // description="Mostra uma mensagem de ajuda, uso: !menu [comando]"
+            case "ajuda": // description="Mostra uma mensagem de ajuda, uso: !ajuda [comando]"
+                return commands.getHelp(this.client, this.data, this.args);
+            case "bug":  // description="Envia um bug para o meu criador, uso: !bug mensagem"
                 return this.bug();
-            case "traduzir":
-            case "translate":
+            case "traduzir":  // description="Traduz um texto, uso: !traduzir linguagem texto"
+            case "translate": // description="Traduz um texto, uso: !translate llinguagem texto"
                 return new commands.Translator(this.client).translate(this.data, this.args);
-            case "idiomas":
-            case "languages":
-            case "linguas":
-            case "linguagens":
+            case "idiomas":  // description="Mostra os idiomas disponíveis, uso: !idiomas"
+            case "languages":  // description="Mostra os idiomas disponíveis, uso: !languages"
+            case "linguas":  // description="Mostra os idiomas disponíveis, uso: !linguas"
+            case "linguagens":   // description="Mostra os idiomas disponíveis, uso: !linguagens"
                 return new commands.Translator(this.client).getLanguages(this.data);
-            case "ping":
+            case "ping":  // description="Mostra o tempo de resposta do bot, uso: !ping"
                 return commands.ping(this.client, this.data);
             /* %$INFO$% */
 
             /* %$MIDIA$% */
-            case "sticker":
-            case "f":
-            case "figurinha":
+            case "sticker":  // description="Transforma uma imagen, video ou gif em um sticker, uso: !sticker (mencioando uma imagem, video ou gif)"
+            case "f": // description="Transforma uma imagen, video ou gif em um sticker, uso: !f (mencioando uma imagem, video ou gif)"
+            case "figurinha":  // description="Transforma uma imagen, video ou gif em um sticker, uso: !figurinha (mencioando uma imagem, video ou gif)"
                 return commands.makeSticker(this.client, this.args, this.data);
-            case "musica":
-            case "music":
+            case "musica":  // description="Baixa uma musica do youtube, uso: !musica (enviando o link do youtube ou o nome da musica)"
+            case "music":  // description="Baixa uma musica do youtube, uso: !music (enviando o link do youtube ou o nome da musica)"
                 return new commands.Downloader(this.client, this.data, this.args, "audio").download();
-            case "video":
+            case "video":  // description="Baixa um video do youtube, uso: !video (enviando o link do youtube ou o nome do video)"
                 return new commands.Downloader(this.client, this.data, this.args, "video").download();
-            
             /* %$MIDIA$% */
         }
     }
