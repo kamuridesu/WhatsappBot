@@ -4,4 +4,4 @@
 ![GitHub issues by-label](https://img.shields.io/github/issues/kamuridesu/WhatsappBot/help%20wanted.svg)
 
 
-REFACTOR
+REFACTOR: This project is not working at the moment. I have a plan to rewrite everything from scratch using TypeScript. For a working project, refer to: https://github.com/kamuridesu/Jashin-bot
